@@ -108,8 +108,8 @@ class FrameParser(RoboMasterInfo):
 
     def find_frame_header(self, input_items: bytes) -> int:
         self.buffer = self.pre_buffer + input_items[:]
-        for i in range(0, len(input_items), 27):
-            if input_items[i : i + 12] == self.frame_header:
+        for i in range(0, len(self.buffer) - 27, 1):
+            if self.buffer[i : i + 12] == self.frame_header:
                 self.frame_pointers.append(i)
         if len(self.frame_pointers) == 0:
             return -1
@@ -147,7 +147,7 @@ class FrameParser(RoboMasterInfo):
             return False
         # if message_package is empty, return False
         info = RoboMasterInfo()
-        for i in range(0, len(self.message_package), 27):
+        for i in range(0, len(self.message_package), 1):
             cmd_id = int.from_bytes(self.message_package[i : i + 2], byteorder="big")
             if cmd_id == info.cmd_id_1:
                 info.hero_position[0] = int.from_bytes(
