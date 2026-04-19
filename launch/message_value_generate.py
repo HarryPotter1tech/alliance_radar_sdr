@@ -80,6 +80,7 @@ class MessageValueGenerator:
         infentry_gain_2: list[int] = [0, 0, 0, 0, 0],
         drone_gain: list[int] = [0, 0, 0, 0, 0],
         sentinel_gain: list[int] = [0, 0, 0, 0, 0],
+        sentinel_posture: int = 0,
     ):
         self.set_mode = set_mode
         # frame_header
@@ -146,6 +147,7 @@ class MessageValueGenerator:
             self.infentry_gain_2 = self._pack_gain(infentry_gain_2)
             self.drone_gain = self._pack_gain(drone_gain)
             self.sentinel_gain = self._pack_gain(sentinel_gain)
+            self.sentinel_posture = sentinel_posture.to_bytes(1, byteorder="little")
         if self.set_mode == "random":
             self.hero_position_x = random.randint(0, 1000).to_bytes(2, byteorder="big")
             self.hero_position_y = random.randint(0, 1000).to_bytes(2, byteorder="big")
@@ -209,6 +211,9 @@ class MessageValueGenerator:
             self.infentry_gain_2 = self._pack_gain(self.infentry_gain_2)
             self.drone_gain = self._pack_gain(self.drone_gain)
             self.sentinel_gain = self._pack_gain(self.sentinel_gain)
+            self.sentinel_posture = random.randint(0, 255).to_bytes(
+                1, byteorder="little"
+            )
             print("Random values generate>>>.")
             print(
                 int.from_bytes(self.hero_position_x, byteorder="big"),
@@ -252,8 +257,8 @@ class MessageValueGenerator:
             print(int.from_bytes(self.engineer_gain, byteorder="big"))
             print(int.from_bytes(self.infentry_gain_1, byteorder="big"))
             print(int.from_bytes(self.infentry_gain_2, byteorder="big"))
-            print(int.from_bytes(self.drone_gain, byteorder="big"))
             print(int.from_bytes(self.sentinel_gain, byteorder="big"))
+            print(int.from_bytes(self.sentinel_posture, byteorder="little"))
             print("Random values printed successfully.")
         # frame_tail
         self._crc16 = 0x0000
@@ -315,8 +320,8 @@ class MessageValueGenerator:
             + self.engineer_gain
             + self.infentry_gain_1
             + self.infentry_gain_2
-            + self.drone_gain
             + self.sentinel_gain
+            + self.sentinel_posture
         )
 
         # 生成 5 个完整帧并拼接

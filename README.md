@@ -2,6 +2,17 @@
 
 本项目围绕 GFSK 无线链路，完成了从业务数据构造、帧打包、GNU Radio 调制/收发，到后续分析与调试接口的基础流程。
 
+## 环境说明
+
+- `radar-sdr/`
+	- 项目使用的 Python 虚拟环境目录。
+	- 其中已安装当前接收端分析所需的依赖，例如 `dearpygui`、`pyzmq` 等。
+	- 开发或运行前建议先激活该环境，避免本机系统 Python 和项目依赖不一致。
+
+```bash
+source radar-sdr/bin/activate
+```
+
 ## 目录说明（重点）
 
 ### 1) `launch/`：业务消息与链路帧生成
@@ -15,6 +26,7 @@
 		- `0x0A03` 弹量
 		- `0x0A04` 经济与占点
 		- `0x0A05` 增益
+	- 已按协议修正 `0x0A05` 负载结构：去掉不需要的字段，补齐哨兵姿态字节，并统一发送端字节序。
 
 - `frame_generate.py`
 	- 负责链路层封装。
@@ -25,6 +37,10 @@
 	- `transmmit_mode`：
 		- `0`：信号链路 access code
 		- `1`：干扰链路 access code
+
+- `launch_tofile.py`
+	- 生成 `package.bin` 的入口脚本。
+	- 先构造业务消息，再封装链路帧并写入二进制文件。
 
 - `launch.py`
 	- 项目启动脚本（当前用于生成 `package.bin` 的入口）。
@@ -57,7 +73,12 @@
 
 - `analysis.py`
 	- 使用 ZeroMQ `REQ` 套接字连接 `tcp://localhost:5555`。
-	- 持续接收字节数据并累积到缓冲区（当前仅完成接收骨架）。
+	- 持续接收字节数据并调用帧解析器完成基础打印。
+	- 当前作为接收分析入口，后续可继续叠加 CRC 校验、切帧统计和业务分发。
+
+- `frame_parser.py`
+	- 负责接收端帧头识别、负载提取和业务字段解析。
+	- 已按协议同步 `0x0A05` 的字段布局与偏移，包含哨兵姿态字段。
 
 - `frame_divde.py`
 	- 预留帧切分脚本（当前为空）。
@@ -104,7 +125,7 @@ python analysis.py
 ## 当前状态与注意事项
 
 - `gui/debug_gui.py` 与 `analysis/frame_divde.py` 仍为空，需要补充功能实现。
-- `analysis.py` 目前仅持续 `recv`，尚未进行帧同步/切帧/CRC 校验。
+- `analysis.py` 已接入 `FrameParser`，但仍建议后续补上 CRC 校验与异常帧统计。
 - GNU Radio 导出脚本中 `blocks_file_source` 路径写为 `.../tool/package.bin`，与当前仓库目录 `launch/package.bin` 可能不一致，运行前请确认并修改。
 - 文件与类名存在拼写 `Transmmit`（双 m），属于当前项目命名约定，引用时需保持一致。
 
