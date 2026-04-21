@@ -6,7 +6,7 @@
 
 - `radar-sdr/`
 	- 项目使用的 Python 虚拟环境目录。
-	- 其中已安装当前接收端分析所需的依赖，例如 `dearpygui`、`pyzmq` 等。
+	- 其中安装当前链路与协议相关依赖（当前重点为 `startrek`、`tcp`、`mqtt`）。
 	- 开发或运行前建议先激活该环境，避免本机系统 Python 和项目依赖不一致。
 
 ```bash
@@ -21,6 +21,12 @@ source radar-sdr/bin/activate
 - 流图与产物更新：`GFSK-loop.grc` 已更新；`launch/package.bin` 随业务帧生成逻辑重新产出。
 - 虚拟环境依赖更新：当前 `radar-sdr/` 环境中新增 `startrek`、`tcp` 相关包及对应 `.dist-info` 文件（由终端安装依赖产生）。
 
+## 近期环境调整（2026-04-22 夜间）
+
+- 已从虚拟环境中卸载 `dearpygui`、`pyzmq`、`zmq`，以收敛到当前链路所需依赖。
+- 已安装 `mqtt`（`mqtt-0.0.1`），并引入对应脚本与元数据文件。
+- 当前 `gui/` 目录下 Python UI 原型文件已移除，后续 UI 将迁移为 Rust 实现。
+
 ## 本次更新明细（功能 + 模块）
 
 ### 功能更新
@@ -34,9 +40,10 @@ source radar-sdr/bin/activate
 ### 模块更新
 
 - 修改：`analysis/analysis.py`、`analysis/frame_parser.py`、`GFSK-loop.grc`、`launch/package.bin`。
-- 删除：`gui/debug_gui.py`。
-- 新增：`gui/sdr_gui.py`、`gui/gui_test.py`、`GFSK_Transmmit_signal.py`、根目录 `package.bin`。
-- 环境新增：`radar-sdr/lib/python3.10/site-packages/startrek/`、`radar-sdr/lib/python3.10/site-packages/tcp/` 及对应 `.dist-info`。
+- 删除：`gui/debug_gui.py`、`gui/sdr_gui.py`、`gui/gui_test.py`。
+- 新增：`GFSK_Transmmit_signal.py`、根目录 `package.bin`。
+- 环境新增：`radar-sdr/lib/python3.10/site-packages/startrek/`、`radar-sdr/lib/python3.10/site-packages/tcp/`、`radar-sdr/lib/python3.10/site-packages/mqtt-0.0.1.egg-info/`。
+- 环境移除：`dearpygui`、`pyzmq`、`zmq` 相关包目录与元数据。
 
 ## 目录说明（重点）
 
@@ -110,11 +117,8 @@ source radar-sdr/bin/activate
 
 ### 4) `gui/`：可视化调试
 
-- `sdr_gui.py`
-	- GUI 主体结构文件（当前为初始化占位，后续补充可视化组件）。
-
-- `gui_test.py`
-	- GUI 侧测试入口（当前为最小测试框架）。
+- 当前状态：Python 侧 GUI 原型已移除，目录预留。
+- 规划：后续整体 UI 将使用 Rust 重写，并作为库（lib）形式引入，通过 MQTT 与链路/分析模块通信。
 
 ## 端到端流程
 
@@ -153,7 +157,7 @@ python analysis.py
 ## 当前状态与注意事项
 
 - `analysis/frame_divde.py` 仍为空，需要补充切帧功能实现。
-- `gui/sdr_gui.py` 与 `gui/gui_test.py` 当前为初始框架，需继续补齐业务可视化逻辑。
+- Python GUI 原型已下线，后续 UI 方案为 Rust lib + MQTT 通信。
 - `analysis.py` 已接入 `FrameParser`，但仍建议后续补上 CRC 校验与异常帧统计。
 - GNU Radio 导出脚本中 `blocks_file_source` 路径写为 `.../tool/package.bin`，与当前仓库目录 `launch/package.bin` 可能不一致，运行前请确认并修改。
 - 文件与类名存在拼写 `Transmmit`（双 m），属于当前项目命名约定，引用时需保持一致。
@@ -162,5 +166,5 @@ python analysis.py
 
 1. 在 `analysis/frame_divde.py` 实现基于 `access_code + header` 的切帧器。
 2. 在 `analysis.py` 增加 CRC8/CRC16 校验与命令字分发解析。
-3. 在 `gui/sdr_gui.py` 增加实时帧计数、CRC 失败计数、各 cmd_id 字段可视化。
+3. 设计并落地 Rust UI 库接口，明确与 Python 侧的 MQTT topic、QoS、消息格式约定。
 4. 统一 `package.bin` 产物路径，避免 `launch/` 与 `tool/` 的路径分叉。
