@@ -13,6 +13,31 @@
 source radar-sdr/bin/activate
 ```
 
+## 近期更新（2026-04-22）
+
+- 接收分析链路调整：`analysis/analysis.py` 由原先 ZeroMQ 读取改为 TCP 客户端读取，连接 `127.0.0.1:2000`，并在缓存达到 200 字节后触发解析。
+- 协议解析同步：`analysis/frame_parser.py` 中 `0x0A05` 增益帧按 5 组增益（hero/engineer/infantry1/infantry2/sentinel）+ 1 字节 `sentinel_posture` 解析；其中 2 字节子字段按 little-endian 读取。
+- GUI 结构变更：`gui/debug_gui.py` 已移除，新增 `gui/sdr_gui.py` 与 `gui/gui_test.py`（当前为占位/初始化状态）。
+- 流图与产物更新：`GFSK-loop.grc` 已更新；`launch/package.bin` 随业务帧生成逻辑重新产出。
+- 虚拟环境依赖更新：当前 `radar-sdr/` 环境中新增 `startrek`、`tcp` 相关包及对应 `.dist-info` 文件（由终端安装依赖产生）。
+
+## 本次更新明细（功能 + 模块）
+
+### 功能更新
+
+- 接收通道重构：接收端由 ZeroMQ 改为 TCP Socket，连接地址统一为 `127.0.0.1:2000`。
+- 解析触发策略调整：按分块接收并缓存，缓存达到阈值后触发解析，减少小包频繁解析。
+- 解析接口简化：`FrameParser` 改为直接接收输入字节进行 `payload_parse(input_items)`。
+- 协议一致性同步：`0x0A05` 仍按 5 组增益 + 1 字节 `sentinel_posture` 解析，2 字节子字段保持 little-endian。
+- 数据结构健壮性修复：`RoboMasterInfo` 的列表字段改为 `dataclass field(default_factory=...)`，避免实例共享可变默认值。
+
+### 模块更新
+
+- 修改：`analysis/analysis.py`、`analysis/frame_parser.py`、`GFSK-loop.grc`、`launch/package.bin`。
+- 删除：`gui/debug_gui.py`。
+- 新增：`gui/sdr_gui.py`、`gui/gui_test.py`、`GFSK_Transmmit_signal.py`、根目录 `package.bin`。
+- 环境新增：`radar-sdr/lib/python3.10/site-packages/startrek/`、`radar-sdr/lib/python3.10/site-packages/tcp/` 及对应 `.dist-info`。
+
 ## 目录说明（重点）
 
 ### 1) `launch/`：业务消息与链路帧生成
@@ -72,12 +97,12 @@ source radar-sdr/bin/activate
 ### 3) `analysis/`：接收数据分析
 
 - `analysis.py`
-	- 使用 ZeroMQ `REQ` 套接字连接 `tcp://localhost:5555`。
-	- 持续接收字节数据并调用帧解析器完成基础打印。
+	- 使用 TCP Socket 连接 `127.0.0.1:2000`。
+	- 持续接收字节分块并进行缓存，达到阈值后调用帧解析器完成基础打印。
 	- 当前作为接收分析入口，后续可继续叠加 CRC 校验、切帧统计和业务分发。
 
 - `frame_parser.py`
-	- 负责接收端帧头识别、负载提取和业务字段解析。
+	- 负责接收端业务字段解析（当前由上层输入完整待解析负载）。
 	- 已按协议同步 `0x0A05` 的字段布局与偏移，包含哨兵姿态字段。
 
 - `frame_divde.py`
@@ -85,8 +110,11 @@ source radar-sdr/bin/activate
 
 ### 4) `gui/`：可视化调试
 
-- `debug_gui.py`
-	- GUI 调试入口预留（当前为空）。
+- `sdr_gui.py`
+	- GUI 主体结构文件（当前为初始化占位，后续补充可视化组件）。
+
+- `gui_test.py`
+	- GUI 侧测试入口（当前为最小测试框架）。
 
 ## 端到端流程
 
@@ -94,7 +122,7 @@ source radar-sdr/bin/activate
 2. `launch/frame_generate.py` 将业务消息按 15 字节切片并封装链路头。
 3. `launch/launch.py` 输出 `package.bin`。
 4. `gnu radio /GFSK-Transmmit-signal.grc` 或对应 Python 流图读取 `package.bin`，执行 GFSK 调制并通过 Pluto 发射。
-5. 接收端流图完成解调后通过 ZeroMQ 输出。
+5. 接收端流图完成解调后通过本地 TCP 服务输出。
 6. `analysis/analysis.py` 接收并准备后续分析。
 
 ## 快速使用（最小路径）
@@ -124,7 +152,8 @@ python analysis.py
 
 ## 当前状态与注意事项
 
-- `gui/debug_gui.py` 与 `analysis/frame_divde.py` 仍为空，需要补充功能实现。
+- `analysis/frame_divde.py` 仍为空，需要补充切帧功能实现。
+- `gui/sdr_gui.py` 与 `gui/gui_test.py` 当前为初始框架，需继续补齐业务可视化逻辑。
 - `analysis.py` 已接入 `FrameParser`，但仍建议后续补上 CRC 校验与异常帧统计。
 - GNU Radio 导出脚本中 `blocks_file_source` 路径写为 `.../tool/package.bin`，与当前仓库目录 `launch/package.bin` 可能不一致，运行前请确认并修改。
 - 文件与类名存在拼写 `Transmmit`（双 m），属于当前项目命名约定，引用时需保持一致。
@@ -133,5 +162,5 @@ python analysis.py
 
 1. 在 `analysis/frame_divde.py` 实现基于 `access_code + header` 的切帧器。
 2. 在 `analysis.py` 增加 CRC8/CRC16 校验与命令字分发解析。
-3. 为 `gui/debug_gui.py` 增加实时帧计数、CRC 失败计数、各 cmd_id 字段可视化。
+3. 在 `gui/sdr_gui.py` 增加实时帧计数、CRC 失败计数、各 cmd_id 字段可视化。
 4. 统一 `package.bin` 产物路径，避免 `launch/` 与 `tool/` 的路径分叉。

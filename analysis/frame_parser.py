@@ -1,16 +1,16 @@
 from typing import Union
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class RoboMasterInfo:
     cmd_id_1: int = 0x0A01
-    hero_position: list[int] = [0, 0]
-    engineer_position: list[int] = [0, 0]
-    infentry_position_1: list[int] = [0, 0]
-    infentry_position_2: list[int] = [0, 0]
-    drone_position: list[int] = [0, 0]
-    sentinel_position: list[int] = [0, 0]
+    hero_position: list[int] = field(default_factory=lambda: [0, 0])
+    engineer_position: list[int] = field(default_factory=lambda: [0, 0])
+    infentry_position_1: list[int] = field(default_factory=lambda: [0, 0])
+    infentry_position_2: list[int] = field(default_factory=lambda: [0, 0])
+    drone_position: list[int] = field(default_factory=lambda: [0, 0])
+    sentinel_position: list[int] = field(default_factory=lambda: [0, 0])
 
     cmd_id_2: int = 0x0A02
     hero_blood: int = 0
@@ -33,11 +33,11 @@ class RoboMasterInfo:
     occupation_status: bytes = b""
     cmd_id_5: int = 0x0A05
     # each gain=1+2+1+1+2 total 7 bytes
-    hero_gain: list[int] = [0, 0, 0, 0, 0]
-    engineer_gain: list[int] = [0, 0, 0, 0, 0]
-    infentry_gain_1: list[int] = [0, 0, 0, 0, 0]
-    infentry_gain_2: list[int] = [0, 0, 0, 0, 0]
-    sentinel_gain: list[int] = [0, 0, 0, 0, 0]
+    hero_gain: list[int] = field(default_factory=lambda: [0, 0, 0, 0, 0])
+    engineer_gain: list[int] = field(default_factory=lambda: [0, 0, 0, 0, 0])
+    infentry_gain_1: list[int] = field(default_factory=lambda: [0, 0, 0, 0, 0])
+    infentry_gain_2: list[int] = field(default_factory=lambda: [0, 0, 0, 0, 0])
+    sentinel_gain: list[int] = field(default_factory=lambda: [0, 0, 0, 0, 0])
     sentinel_posture: int = 0
 
 
@@ -83,69 +83,13 @@ class FrameParser(RoboMasterInfo):
             0xf78f,0xe606,0xd49d,0xc514,0xb1ab,0xa022,0x92b9,0x8330,0x7bc7,0x6a4e,0x58d5,0x495c,0x3de3,0x2c6a,0x1ef1,0x0f78,
         ]
     # fmt: on
-    def __init__(self, receive_mode=0):
-        self.receive_mode = receive_mode
-        # if receive_mode == 0 mean receive signal
-        # if receive_mode == 1 mean receive noise
-        self.header_1: int = 0x000F
-        self.header_2: int = 0x000F
-        self.access_codes: list = [0x2F6F4C74B914492E, 0x16E8D377151C712D]
-        self.access_code = self.access_codes[self.receive_mode]
-        self.access_code = self.access_code.to_bytes(8, byteorder="big")
-        self.header_1 = self.header_1.to_bytes(2, byteorder="big")
-        self.header_2 = self.header_2.to_bytes(2, byteorder="big")
-        self.frame_header = self.access_code + self.header_1 + self.header_2
-        self.buffer: bytes = b""
-        self.pre_buffer: bytes = b""
+    def __init__(self):
         self.message_package: bytes = b""
-        # store the broken frame header in last buffer, and add it to the head of next buffer
-        self.frame_pointers: list[int] = []
-        # a list record the pointer of frame header in buffer
-        self.hasframe_pointer: int = -1
-        # a pointer record the position of frame header in buffer, if -1 mean no frame header in buffer
-        self.frame_broken: int = -1
-        # a pointer record the position of frame header in buffer, if 0 mean frame header is complete in buffer, if 1 mean frame header is broken in buffer
 
-    def find_frame_header(self, input_items: bytes) -> int:
-        self.buffer = self.pre_buffer + input_items[:]
-        for i in range(0, len(self.buffer) - 27, 1):
-            if self.buffer[i : i + 12] == self.frame_header:
-                self.frame_pointers.append(i)
-        if len(self.frame_pointers) == 0:
-            return -1
-        bufferlen = len(self.buffer)
-        maxframepointer = max(self.frame_pointers)
-        minframepointer = min(self.frame_pointers)
-        if maxframepointer + 27 > bufferlen:
-            self.frame_broken = 1
-            self.hasframe_pointer = minframepointer
-            self.pre_buffer = self.buffer[-self.frame_broken :]
-            # maintain the broken frame header in pre_buffer
-        else:
-            self.frame_broken = -1
-            self.hasframe_pointer = minframepointer
-            self.pre_buffer = self.buffer[maxframepointer + 27 :]
-            # maintain the complete frame header in pre_buffer
-            return 0
-
-    def frame_payload_link(self) -> bytes:
-        if self.frame_broken == -1:
-            for i in range(0, len(self.frame_pointers)):
-                self.message_package += self.buffer[
-                    self.frame_pointers[i] + 12 : self.frame_pointers[i] + 27
-                ]
-        else:
-            for i in range(0, len(self.frame_pointers) - 1):
-                self.message_package += self.buffer[
-                    self.frame_pointers[i] + 12 : self.frame_pointers[i] + 27
-                ]
-        # extract the payload from buffer and store it in message_package
-        return self.message_package
-
-    def payload_parse(self) -> RoboMasterInfo:
+    def payload_parse(self, input_items: bytes) -> RoboMasterInfo:
+        self.message_package = input_items
         if self.message_package == b"":
             return False
-        # if message_package is empty, return False
         info = RoboMasterInfo()
         for i in range(0, len(self.message_package), 1):
             cmd_id = int.from_bytes(self.message_package[i : i + 2], byteorder="big")
