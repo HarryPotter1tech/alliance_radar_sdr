@@ -1,5 +1,5 @@
-# RADAR-SDR
-
+# rmcs_radar_sdr
+> 仓库名已更新为 `rmcs_radar_sdr`。以下文档内容均以该名称为准。
 本项目围绕 GFSK 无线链路，完成了从业务数据构造、帧打包、GNU Radio 调制/收发，到后续分析与调试接口的基础流程。
 
 ## 环境说明
