@@ -21,6 +21,11 @@ source radar-sdr/bin/activate
 - 流图与产物更新：`GFSK-loop.grc` 已更新；`launch/package.bin` 随业务帧生成逻辑重新产出。
 - 虚拟环境依赖更新：当前 `radar-sdr/` 环境中新增 `startrek`、`tcp` 相关包及对应 `.dist-info` 文件（由终端安装依赖产生）。
 
+## 近期更新（2026-05-01）
+
+- `tcp_comm/tcp_comm.py`：接收端新增断线自动重连逻辑，连接中断或 `recv` 异常会重新建立连接。
+- `frame_parser/`：解析器已整理为独立包目录，使用 `frame_parser/frame_parser.py` 作为导入路径。
+
 ## 近期环境调整（2026-04-22 夜间）
 
 - 已从虚拟环境中卸载 `dearpygui`、`pyzmq`、`zmq`，以收敛到当前链路所需依赖。
@@ -107,6 +112,12 @@ source radar-sdr/bin/activate
 	- 使用 TCP Socket 连接 `127.0.0.1:2000`。
 	- 持续接收字节分块并进行缓存，达到阈值后调用帧解析器完成基础打印。
 	- 当前作为接收分析入口，后续可继续叠加 CRC 校验、切帧统计和业务分发。
+
+### 3.1) `tcp_comm/`：TCP 接收与转发
+
+- `tcp_comm.py`
+	- 接收端连接 `127.0.0.1:2000` 与 `127.0.0.1:3000`，支持断线重连。
+	- 转发端监听 `192.168.1.10:4000`，向 Unity 客户端发送解析结果。
 
 - `frame_parser.py`
 	- 负责接收端业务字段解析（当前由上层输入完整待解析负载）。

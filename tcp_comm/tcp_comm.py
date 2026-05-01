@@ -74,7 +74,7 @@ def tcp_gnuradio_noise_key_receiver():
             tcp_socket.close()
 
 
-def tcp_transmitter(
+def tcp_datacenter_transmitter(
     signal_info: RoboMaster_Signal_Info, noise_key: RoboMaster_Noise_Key
 ):
     print("Initializing sdr server…")
@@ -103,3 +103,28 @@ def tcp_transmitter(
             print("Error sending data to unity client: ", e)
         finally:
             connection.close()
+
+
+def tcp_datacenter_receiver():
+    print("Initializing sdr server…")
+    tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = ("192.168.1.10", 4000)
+    while True:
+        try:
+            tcp_socket.connect(server_address)
+            print("Connected to sdr server.")
+            buffer: bytes = b""
+            while True:
+                try:
+                    chunk = tcp_socket.recv(1024)
+                except socket.error as e:
+                    print("Error receiving data, reconnecting: ", e)
+                    break
+                if not chunk:
+                    print("Connection closed, reconnecting...")
+                    break
+                buffer += chunk
+                if len(buffer) >= 100:
+                    print("Received data: ", buffer)
+        except socket.error as e:
+            print("Error to initialize sdr server: ", e)
