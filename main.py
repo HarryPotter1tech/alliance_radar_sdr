@@ -4,13 +4,18 @@ from tcp_comm.tcp_comm import (
     tcp_datacenter_transmitter,
     tcp_datacenter_receiver,
 )
-from frame_parser.frame_parser import RoboMaster_Signal_Info, RoboMaster_Noise_Key
+from parser.gnuradio_frame_parser import (
+    RoboMaster_Signal_Info,
+    RoboMaster_Noise_Key,
+)
+from parser.datacenter_package_parser import RadarMarkProcess
 import threading
 
 
 def main():
     signal_info: RoboMaster_Signal_Info = RoboMaster_Signal_Info()
     noise_key: RoboMaster_Noise_Key = RoboMaster_Noise_Key()
+    radar_mark_process: RadarMarkProcess = RadarMarkProcess()
     lock = threading.Lock()
     signal_thread = threading.Thread(
         target=tcp_gnuradio_signal_receiver, args=(signal_info, lock), daemon=True
@@ -24,7 +29,7 @@ def main():
         daemon=True,
     )
     receiver_thread = threading.Thread(
-        target=tcp_datacenter_receiver, args=(lock,), daemon=True
+        target=tcp_datacenter_receiver, args=(radar_mark_process, lock), daemon=True
     )
     signal_thread.start()
     noise_key_thread.start()

@@ -1,10 +1,11 @@
 import socket
 import threading
-from frame_parser.frame_parser import (
+from parser.gnuradio_frame_parser import (
     FrameParser,
     RoboMaster_Signal_Info,
     RoboMaster_Noise_Key,
 )
+from parser.datacenter_package_parser import PackageParser, RadarMarkProcess
 
 
 def _update_dataclass_inplace(target, source) -> bool:
@@ -93,6 +94,40 @@ def tcp_gnuradio_noise_key_receiver(
             tcp_socket.close()
 
 
+def tcp_datacenter_receiver(radar_mark_process: RadarMarkProcess, lock: threading.Lock):
+    print("Initializing sdr server…")
+    tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_address = ("192.168.1.10", 2000)
+    packageparser = PackageParser()
+    while True:
+        try:
+            tcp_socket.connect(server_address)
+            print("Connected to sdr server.")
+            buffer: bytes = b""
+            while True:
+                try:
+                    chunk = tcp_socket.recv(1024)
+                except socket.error as e:
+                    print("Error receiving data, reconnecting: ", e)
+                    break
+                if not chunk:
+                    print("Connection closed, reconnecting...")
+                    break
+                buffer += chunk
+                if len(buffer) >= 100:
+                    print("Received data: ", buffer)
+                    with lock:
+                        parsed = packageparser.package_parse(buffer)
+                        _update_dataclass_inplace(radar_mark_process, parsed)
+                    print(
+                        "Parse message package complete, RadarMarkProcess: ",
+                        radar_mark_process,
+                    )
+                    buffer = b""
+        except socket.error as e:
+            print("Error to initialize sdr server: ", e)
+
+
 def tcp_datacenter_transmitter(
     signal_info: RoboMaster_Signal_Info,
     noise_key: RoboMaster_Noise_Key,
@@ -125,28 +160,3 @@ def tcp_datacenter_transmitter(
             print("Error sending data to unity client: ", e)
         finally:
             connection.close()
-
-
-def tcp_datacenter_receiver(lock: threading.Lock):
-    print("Initializing sdr server…")
-    tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ("192.168.1.10", 2000)
-    while True:
-        try:
-            tcp_socket.connect(server_address)
-            print("Connected to sdr server.")
-            buffer: bytes = b""
-            while True:
-                try:
-                    chunk = tcp_socket.recv(1024)
-                except socket.error as e:
-                    print("Error receiving data, reconnecting: ", e)
-                    break
-                if not chunk:
-                    print("Connection closed, reconnecting...")
-                    break
-                buffer += chunk
-                if len(buffer) >= 100:
-                    print("Received data: ", buffer)
-        except socket.error as e:
-            print("Error to initialize sdr server: ", e)
