@@ -11,14 +11,21 @@ import threading
 def main():
     signal_info: RoboMaster_Signal_Info = RoboMaster_Signal_Info()
     noise_key: RoboMaster_Noise_Key = RoboMaster_Noise_Key()
-    signal_thread = threading.Thread(target=tcp_gnuradio_signal_receiver, daemon=True)
+    lock = threading.Lock()
+    signal_thread = threading.Thread(
+        target=tcp_gnuradio_signal_receiver, args=(signal_info, lock), daemon=True
+    )
     noise_key_thread = threading.Thread(
-        target=tcp_gnuradio_noise_key_receiver, daemon=True
+        target=tcp_gnuradio_noise_key_receiver, args=(noise_key, lock), daemon=True
     )
     transmitter_thread = threading.Thread(
-        target=tcp_datacenter_transmitter, args=(signal_info, noise_key), daemon=True
+        target=tcp_datacenter_transmitter,
+        args=(signal_info, noise_key, lock),
+        daemon=True,
     )
-    receiver_thread = threading.Thread(target=tcp_datacenter_receiver, daemon=True)
+    receiver_thread = threading.Thread(
+        target=tcp_datacenter_receiver, args=(lock,), daemon=True
+    )
     signal_thread.start()
     noise_key_thread.start()
     transmitter_thread.start()

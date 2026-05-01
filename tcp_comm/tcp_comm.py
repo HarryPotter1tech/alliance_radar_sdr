@@ -1,4 +1,5 @@
 import socket
+import threading
 from frame_parser.frame_parser import (
     FrameParser,
     RoboMaster_Signal_Info,
@@ -6,7 +7,9 @@ from frame_parser.frame_parser import (
 )
 
 
-def tcp_gnuradio_signal_receiver():
+def tcp_gnuradio_signal_receiver(
+    robomaster_signal_info: RoboMaster_Signal_Info, lock: threading.Lock
+):
     server_address = ("127.0.0.1", 2000)
     frameparser = FrameParser()
     while True:
@@ -28,10 +31,15 @@ def tcp_gnuradio_signal_receiver():
                 buffer += chunk
                 if len(buffer) >= 200:
                     print("Received data: ", buffer)
-                    RoboMaster_signal_info = frameparser.payload_parse(buffer)
+                    with lock:
+                        copy = robomaster_signal_info
+                        robomaster_signal_info = frameparser.payload_parse(buffer)
+                        if robomaster_signal_info is None:
+                            robomaster_signal_info = copy
+                        # use copy to maintain the previous value if parsing fails, send the previous value to unity
                     print(
                         "Parse message package complete, RoboMaster_signal_info: ",
-                        RoboMaster_signal_info,
+                        robomaster_signal_info,
                     )
                     buffer = b""
         except socket.error as e:
@@ -40,7 +48,9 @@ def tcp_gnuradio_signal_receiver():
             tcp_socket.close()
 
 
-def tcp_gnuradio_noise_key_receiver():
+def tcp_gnuradio_noise_key_receiver(
+    robomaster_noise_key: RoboMaster_Noise_Key, lock: threading.Lock
+):
     server_address = ("127.0.0.1", 3000)
     frameparser = FrameParser()
     while True:
@@ -62,7 +72,12 @@ def tcp_gnuradio_noise_key_receiver():
                 buffer += chunk
                 if len(buffer) >= 200:
                     print("Received data: ", buffer)
-                    robomaster_noise_key = frameparser.payload_parse(buffer)
+                    with lock:
+                        copy = robomaster_noise_key
+                        robomaster_noise_key = frameparser.payload_parse(buffer)
+                        if robomaster_noise_key is None:
+                            robomaster_noise_key = copy
+                        # use copy to maintain the previous value if parsing fails, send the previous value to unity client to avoid sending None
                     print(
                         "Parse message package complete, robomaster_noise_key: ",
                         robomaster_noise_key,
@@ -75,7 +90,9 @@ def tcp_gnuradio_noise_key_receiver():
 
 
 def tcp_datacenter_transmitter(
-    signal_info: RoboMaster_Signal_Info, noise_key: RoboMaster_Noise_Key
+    signal_info: RoboMaster_Signal_Info,
+    noise_key: RoboMaster_Noise_Key,
+    lock: threading.Lock,
 ):
     print("Initializing sdr server…")
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -92,8 +109,9 @@ def tcp_datacenter_transmitter(
         connection, client_address = tcp_socket.accept()
         print("Unity client connected: ", client_address)
         try:
-            signal_info_data: bytes = signal_info.to_bytes(102, byteorder="big")
-            noise_key_data: bytes = noise_key.to_bytes(7, byteorder="big")
+            with lock:
+                signal_info_data: bytes = signal_info.to_bytes(102, byteorder="big")
+                noise_key_data: bytes = noise_key.to_bytes(7, byteorder="big")
             data = signal_info_data + noise_key_data
             print("Sending data to unity client: ", data)
             print("Data length: ", len(data))
@@ -105,7 +123,7 @@ def tcp_datacenter_transmitter(
             connection.close()
 
 
-def tcp_datacenter_receiver():
+def tcp_datacenter_receiver(lock: threading.Lock):
     print("Initializing sdr server…")
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ("192.168.1.10", 4000)
