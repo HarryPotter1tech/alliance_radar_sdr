@@ -1,7 +1,7 @@
 import random
 
 
-class MessageValueGenerator:
+class NoiseKeyValueGenerator:
     # fmt: off
     crc_8_table: list[int] = [
             0x00,0x5e,0xbc,0xe2,0x61,0x3f,0xdd,0x83,0xc2,0x9c,0x7e,0x20,0xa3,0xfd,0x1f,0x41,
@@ -45,7 +45,13 @@ class MessageValueGenerator:
         set_mode: str = "random",  # manual or random
         # cmd_id=0x0a01
         cmd_id_6: int = 0x0A06,
-        key=123456,
+        sdr_behavior_: int = 0,
+        key_1: int = 1,
+        key_2: int = 2,
+        key_3: int = 3,
+        key_4: int = 4,
+        key_5: int = 5,
+        key_6: int = 6,
     ):
         self.set_mode = set_mode
         # frame_header
@@ -57,22 +63,44 @@ class MessageValueGenerator:
 
         # cmd_id
         self.cmd_id_6 = cmd_id_6.to_bytes(2, byteorder="big")
-        self.key = key.to_bytes(6, byteorder="big", signed=False)
+        self.key_1 = key_1.to_bytes(1, byteorder="big")
+        self.key_2 = key_2.to_bytes(1, byteorder="big")
+        self.key_3 = key_3.to_bytes(1, byteorder="big")
+        self.key_4 = key_4.to_bytes(1, byteorder="big")
+        self.key_5 = key_5.to_bytes(1, byteorder="big")
+        self.key_6 = key_6.to_bytes(1, byteorder="big")
+        self.sdr_behavior = sdr_behavior_.to_bytes(1, byteorder="big")
 
         # mode choice&&data
         if self.set_mode == "manual":
             print("Manual values generate>>>.")
-            print(self.cmd_id_6)
-            print(self.key)
+            print("self.cmd_id_6:", self.cmd_id_6)
+            print("self.sdr_behavior:", self.sdr_behavior)
+            print("self.key_1:", self.key_1)
+            print("self.key_2:", self.key_2)
+            print("self.key_3:", self.key_3)
+            print("self.key_4:", self.key_4)
+            print("self.key_5:", self.key_5)
+            print("self.key_6:", self.key_6)
             print("Manual values printed successfully.")
 
         if self.set_mode == "random":
             print("Random values generate>>>.")
-            self.key = random.randint(0, 0xFFFFFFFFFFFF).to_bytes(
-                6, byteorder="big", signed=False
-            )
-            print(self.cmd_id_6)
-            print(self.key)
+            self.sdr_behavior = random.randint(0, 2).to_bytes(1, byteorder="big")
+            self.key_1 = random.randint(0, 10).to_bytes(1, byteorder="big")
+            self.key_2 = random.randint(0, 10).to_bytes(1, byteorder="big")
+            self.key_3 = random.randint(0, 10).to_bytes(1, byteorder="big")
+            self.key_4 = random.randint(0, 10).to_bytes(1, byteorder="big")
+            self.key_5 = random.randint(0, 10).to_bytes(1, byteorder="big")
+            self.key_6 = random.randint(0, 10).to_bytes(1, byteorder="big")
+            print("self.cmd_id_6:", self.cmd_id_6)
+            print("self.sdr_behavior:", self.sdr_behavior)
+            print("self.key_1:", self.key_1)
+            print("self.key_2:", self.key_2)
+            print("self.key_3:", self.key_3)
+            print("self.key_4:", self.key_4)
+            print("self.key_5:", self.key_5)
+            print("self.key_6:", self.key_6)
             print("Random values printed successfully.")
         # frame_tail
         self._crc16 = 0x0000
@@ -90,8 +118,17 @@ class MessageValueGenerator:
         return crc ^ 0xFFFF
 
     def message_pack(self) -> bytes:
-        payload = self.key
+        payload = (
+            self.sdr_behavior
+            + self.key_1
+            + self.key_2
+            + self.key_3
+            + self.key_4
+            + self.key_5
+            + self.key_6
+        )
         self.message_package = self._build_frame(self.cmd_id_6, payload)
+        print(len(self.message_package))
         return self.message_package
 
     def _build_frame(self, cmd_id: bytes, payload: bytes) -> bytes:
@@ -107,5 +144,8 @@ class MessageValueGenerator:
         crc8_val = self.crc8(header).to_bytes(1, byteorder="little")
         frame_wo_crc16 = header + crc8_val + cmd_id + payload
         crc16_val = self.crc16(frame_wo_crc16).to_bytes(2, byteorder="little")
-
-        return frame_wo_crc16 + crc16_val
+        return (
+            frame_wo_crc16
+            + crc16_val
+            + b"\x01" * (15 - len(frame_wo_crc16 + crc16_val) % 15)
+        )

@@ -49,11 +49,10 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: "{\n    \"noise_1\"\n        : {\"noise_sensitivity\" : 2.8323, \"noise_frequency\"\
-      \ : 432200000, \"noise_bandwidth\" : 940000}\n        , \"noise_2\"\n      \
-      \  : {\"noise_sensitivity\" : 2.5809, \"noise_frequency\" : 432500000, \"noise_bandwidth\"\
-      \ : 860000}\n        , \"noise_3\"\n        : {\"noise_sensitivity\" : 0.6646,\
-      \ \"noise_frequency\" : 432800000, \"noise_bandwidth\" : 250000}\n}"
+    value: '{    "noise_1" : {"noise_sensitivity" : 2.8323, "noise_frequency" : 432200000,
+      "noise_bandwidth" : 940000} , "noise_2" : {"noise_sensitivity" : 2.5809, "noise_frequency"
+      : 432500000, "noise_bandwidth" : 860000}, "noise_3": {"noise_sensitivity" :
+      0.6646, "noise_frequency" : 432800000, "noise_bandwidth" : 250000}}'
   states:
     bus_sink: false
     bus_source: false
@@ -112,7 +111,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 112.0]
+    coordinate: [8, 144.0]
     rotation: 0
     state: true
 - name: noise_sensitivity
@@ -206,7 +205,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [208, 260.0]
+    coordinate: [184, 260.0]
     rotation: 0
     state: true
 - name: digital_gfsk_mod_0_0
@@ -216,7 +215,7 @@ blocks:
     alias: ''
     bt: '0.35'
     comment: ''
-    do_unpack: 'False'
+    do_unpack: 'True'
     log: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -227,7 +226,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 260.0]
+    coordinate: [432, 268.0]
     rotation: 0
     state: true
 - name: iio_pluto_sink_0
@@ -253,10 +252,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [696, 392.0]
+    coordinate: [808, 248.0]
     rotation: 0
     state: enabled
-- name: qtgui_freq_sink_x_0
+- name: qtgui_freq_sink_x_0_0
   id: qtgui_freq_sink_x
   parameters:
     affinity: ''
@@ -274,7 +273,7 @@ blocks:
     autoscale: 'True'
     average: '0.05'
     axislabels: 'True'
-    bw: sample_rate
+    bw: sample_rate*2
     color1: '"dark blue"'
     color10: '"dark blue"'
     color2: '"red"'
@@ -287,13 +286,13 @@ blocks:
     color9: '"dark green"'
     comment: ''
     ctrlpanel: 'True'
-    fc: '433200000'
+    fc: noise_frequency
     fftsize: '8192'
     freqhalf: 'True'
     grid: 'False'
     gui_hint: ''
-    label: Relative Gain
-    label1: ''
+    label: db
+    label1: frequency
     label10: ''''''
     label2: ''''''
     label3: ''''''
@@ -306,7 +305,7 @@ blocks:
     legend: 'True'
     maxoutbuf: '0'
     minoutbuf: '0'
-    name: "\"GFSK-noise\u9891\u7387\u56FE\""
+    name: "\"GFSK-signal\u6EE4\u6CE2\u540E\u9891\u7387\u56FE\""
     nconnections: '1'
     norm_window: 'False'
     showports: 'True'
@@ -316,7 +315,7 @@ blocks:
     tr_tag: '""'
     type: complex
     units: dB
-    update_time: '0.5'
+    update_time: '1'
     width1: '1'
     width10: '1'
     width2: '1'
@@ -327,17 +326,17 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    wintype: window.WIN_FLATTOP
-    ymax: '200'
-    ymin: '-200'
+    wintype: window.WIN_HAMMING
+    ymax: '0'
+    ymin: '-70'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 132.0]
+    coordinate: [792, 468.0]
     rotation: 0
     state: enabled
-- name: qtgui_time_sink_x_0_0_0_0_0_0_0
+- name: qtgui_time_sink_x_0_0_0_0_0_0_0_2
   id: qtgui_time_sink_x
   parameters:
     affinity: ''
@@ -354,7 +353,7 @@ blocks:
     alpha9: '1.0'
     autoscale: 'True'
     axislabels: 'True'
-    color1: green
+    color1: cyan
     color10: dark blue
     color2: red
     color3: green
@@ -369,9 +368,9 @@ blocks:
     entags: 'True'
     grid: 'True'
     gui_hint: ''
-    label1: ''
+    label1: signal_output_re
     label10: Signal 10
-    label2: Signal 2
+    label2: signal_output_im
     label3: Signal 3
     label4: Signal 4
     label5: Signal 5
@@ -380,7 +379,7 @@ blocks:
     label8: Signal 8
     label9: Signal 9
     legend: 'True'
-    marker1: '2'
+    marker1: '4'
     marker10: '-1'
     marker2: '-1'
     marker3: '-1'
@@ -390,10 +389,10 @@ blocks:
     marker7: '-1'
     marker8: '-1'
     marker9: '-1'
-    name: "\"noise\u8F93\u51FA\""
+    name: "\"signal\u6EE4\u6CE2\u8F93\u51FA\""
     nconnections: '1'
     size: '2048'
-    srate: sample_rate
+    srate: sample_rate*2
     stemplot: 'False'
     style1: '1'
     style10: '1'
@@ -412,7 +411,7 @@ blocks:
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
     type: complex
-    update_time: '0.5'
+    update_time: '1'
     width1: '1'
     width10: '1'
     width2: '1'
@@ -431,15 +430,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 260.0]
+    coordinate: [816, 100.0]
     rotation: 0
     state: enabled
 
 connections:
 - [blocks_file_source_0, '0', digital_gfsk_mod_0_0, '0']
 - [digital_gfsk_mod_0_0, '0', iio_pluto_sink_0, '0']
-- [digital_gfsk_mod_0_0, '0', qtgui_freq_sink_x_0, '0']
-- [digital_gfsk_mod_0_0, '0', qtgui_time_sink_x_0_0_0_0_0_0_0, '0']
+- [digital_gfsk_mod_0_0, '0', qtgui_freq_sink_x_0_0, '0']
+- [digital_gfsk_mod_0_0, '0', qtgui_time_sink_x_0_0_0_0_0_0_0_2, '0']
 
 metadata:
   file_format: 1

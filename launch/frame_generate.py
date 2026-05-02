@@ -21,6 +21,7 @@ class FrameGenerate:
         package: bytes = b""
         # package is the tatal package list of unit of access_code + header1 + header2 + payload
         for i in range(0, len(payload), 15):
-            package += package_header + payload[i : i + 15]
+            chunk = payload[i : i + 15]
+            package += package_header + chunk
         output_items = package
         return output_items

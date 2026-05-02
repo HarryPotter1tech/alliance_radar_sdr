@@ -354,18 +354,18 @@ class MessageValueGenerator:
         heal, cooling, defense, neg_def, attack = gain
 
         # 1 字节回血增益
-        heal_b = heal.to_bytes(1, byteorder="little", signed=False)
+        heal_b = heal.to_bytes(1, byteorder="big", signed=False)
 
         # 2 字节射击热量冷却增益，小端
-        cooling_b = cooling.to_bytes(2, byteorder="little", signed=False)
+        cooling_b = cooling.to_bytes(2, byteorder="big", signed=False)
 
         # 1 字节防御增益
-        defense_b = defense.to_bytes(1, byteorder="little", signed=False)
+        defense_b = defense.to_bytes(1, byteorder="big", signed=False)
 
         # 1 字节负防御增益（易伤）
-        neg_def_b = neg_def.to_bytes(1, byteorder="little", signed=False)
+        neg_def_b = neg_def.to_bytes(1, byteorder="big", signed=False)
 
         # 2 字节攻击增益，小端
-        attack_b = attack.to_bytes(2, byteorder="little", signed=False)
+        attack_b = attack.to_bytes(2, byteorder="big", signed=False)
 
         return heal_b + cooling_b + defense_b + neg_def_b + attack_b
