@@ -60,7 +60,7 @@ def tcp_gnuradio_signal_receiver(
 def tcp_gnuradio_noise_key_receiver(
     robomaster_noise_key: RoboMaster_Noise_Key, lock: threading.Lock
 ):
-    server_address = ("127.0.0.1", 3000)
+    server_address = ("127.0.0.1", 2500)
 
     frameparser = GnuRadioFrameParser("noise")
     _robomaster_noise_key: RoboMaster_Noise_Key = RoboMaster_Noise_Key()
@@ -102,7 +102,7 @@ def tcp_gnuradio_noise_key_receiver(
 def tcp_datacenter_receiver(radar_mark_process: RadarMarkProcess, lock: threading.Lock):
     print("Initializing sdr server…")
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ("192.168.1.10", 2000)
+    server_address = ("192.168.1.10", 1500)
     packageparser = DataCenterPackageParser()
     while True:
         try:
@@ -139,7 +139,7 @@ def tcp_datacenter_transmitter(
 ):
     print("Initializing sdr server…")
     tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ("192.168.1.10", 3000)
+    server_address = ("192.168.1.10", 1000)
     while True:
         try:
             tcp_socket.bind(server_address)

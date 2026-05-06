@@ -1,152 +1,109 @@
 # alliance_radar_sdr
-。
-本项目围绕 GFSK 无线链路，完成了从业务数据构造、帧打包、GNU Radio 调制/收发，到后续分析与调试接口的基础流程。
+
+本项目围绕 GFSK 无线链路，完成了从业务数据构造、链路帧生成、GNU Radio 调制/解调，到 TCP 解析与外部联调的完整流程。
 
 ## 环境说明
 
-- `radar-sdr/`
-	- 项目使用的 Python 虚拟环境目录。
-	- 其中安装当前链路与协议相关依赖（当前重点为 `startrek`、`tcp`、`mqtt`）。
-	- 开发或运行前建议先激活该环境，避免本机系统 Python 和项目依赖不一致。
+- `radar-sdr/`：项目使用的 Python 虚拟环境目录。
+- 建议先激活该环境，再运行生成、调试和联调脚本。
 
 ```bash
 source radar-sdr/bin/activate
 ```
 
-## 近期更新（2026-05-01）
+## 当前架构
 
-- 目录调整：`analysis/` 已更名为 `frame_parser/`，解析入口统一为 `frame_parser/frame_parser.py`。
-- TCP 通信扩展为 4 个进程/线程：信号接收（2000）、噪声接收（3000）、数据中心发送（4000）、数据中心接收（4000），由 `main.py` 启动。
-- `tcp_comm/tcp_comm.py` 接收端已支持断线重连。
+### 1. `launch/`：业务数据与链路帧生成
 
-## 近期更新（2026-04-22）
+- `message_value_generate.py`：生成业务消息，包含位置、血量、弹量、经济与增益等字段。
+- `noisekey_value_gengerate.py`：生成噪声密钥消息，包含 `sdr_behavior` 和 6 个密钥字节。
+- `frame_generate.py`：负责链路层封装，每 15 字节负载前添加 `access_code`、`header_1` 和 `header_2`。
+- `launch_tofile.py`：离线生成测试文件的入口，会输出 `message_package.bin` 和 `noisekey_package.bin`。
 
-- 接收分析链路调整：`analysis/analysis.py` 由原先 ZeroMQ 读取改为 TCP 客户端读取，连接 `127.0.0.1:2000`，并在缓存达到 200 字节后触发解析。
-- 协议解析同步：`analysis/frame_parser.py` 中 `0x0A05` 增益帧按 5 组增益（hero/engineer/infantry1/infantry2/sentinel）+ 1 字节 `sentinel_posture` 解析；其中 2 字节子字段按 little-endian 读取。
-- GUI 结构变更：`gui/debug_gui.py` 已移除，新增 `gui/sdr_gui.py` 与 `gui/gui_test.py`（当前为占位/初始化状态）。
-- 流图与产物更新：`GFSK-loop.grc` 已更新；`launch/package.bin` 随业务帧生成逻辑重新产出。
-- 虚拟环境依赖更新：当前 `radar-sdr/` 环境中新增 `startrek`、`tcp` 相关包及对应 `.dist-info` 文件（由终端安装依赖产生）。
+### 2. `gnu radio /`：GFSK 发射/接收流图
 
-## 近期环境调整（2026-04-22 夜间）
+- `GFSK_Transmmit_signal.py`：信号侧 GFSK 流图脚本。
+- `GFSK_Transmmit-noise.grc` 和 `GFSK_Transmmit_noise.py`：干扰侧链路脚本。
+- `GFSK_Receiver.grc`、`Receiver_noise.grc`、`Receiver_noise.py`：接收侧链路脚本。
+- 文件名中的 `Transmmit`、`infentry` 等拼写保持了当前项目约定，除非做全局重构，否则不要单独改名。
 
-- 已从虚拟环境中卸载 `dearpygui`、`pyzmq`、`zmq`，以收敛到当前链路所需依赖。
-- 已安装 `mqtt`（`mqtt-0.0.1`），并引入对应脚本与元数据文件。
-- 当前 `gui/` 目录下 Python UI 原型文件已移除，后续 UI 将迁移为 Rust 实现。
+### 3. `tcp/`：TCP 收发与聚合入口
 
-## 本次更新明细（功能 + 模块）
+- `tcp_comm.py`：TCP 连接、断线重连和字节流解析的核心实现。
+- `tcp_launch.py`：当前 TCP 联调入口，使用 4 个线程同时启动信号接收、噪声接收、数据中心接收和数据中心发送。
 
-### 功能更新
+### 4. `parser/`：数据结构解析
 
-- 接收通道重构：接收端由 ZeroMQ 改为 TCP Socket，连接地址统一为 `127.0.0.1:2000`。
-- 解析触发策略调整：按分块接收并缓存，缓存达到阈值后触发解析，减少小包频繁解析。
-- 解析接口简化：`FrameParser` 改为直接接收输入字节进行 `payload_parse(input_items)`。
-- 协议一致性同步：`0x0A05` 仍按 5 组增益 + 1 字节 `sentinel_posture` 解析，2 字节子字段保持 little-endian。
-- 数据结构健壮性修复：`RoboMasterInfo` 的列表字段改为 `dataclass field(default_factory=...)`，避免实例共享可变默认值。
+- `gnuradio_frame_parser.py`：把 GNU Radio 输出的字节流解析成信号信息和噪声密钥结构。
+- `datacenter_package_parser.py`：把数据中心来的雷达标记包解析成 `RadarInfo`。
 
-### 模块更新
+## 当前端口映射
 
-- 修改：`frame_parser/frame_parser.py`、`tcp_comm/tcp_comm.py`、`main.py`、`GFSK-loop.grc`、`launch/package.bin`。
-- 删除：`gui/debug_gui.py`、`gui/sdr_gui.py`、`gui/gui_test.py`。
-- 新增：`GFSK_Transmmit_signal.py`、根目录 `package.bin`。
-- 环境新增：`radar-sdr/lib/python3.10/site-packages/startrek/`、`radar-sdr/lib/python3.10/site-packages/tcp/`、`radar-sdr/lib/python3.10/site-packages/mqtt-0.0.1.egg-info/`。
-- 环境移除：`dearpygui`、`pyzmq`、`zmq` 相关包目录与元数据。
+当前代码里实际使用的端口如下：
 
-## 目录说明（重点）
+- `127.0.0.1:2000`：GNU Radio 信号流输入，解析后更新 `RoboMaster_Signal_Info`
+- `127.0.0.1:2500`：GNU Radio 噪声密钥流输入，解析后更新 `RoboMaster_Noise_Key`
+- `192.168.1.10:1500`：数据中心回传接收端，解析后更新 `RadarMarkProcess`
+- `192.168.1.10:1000`：数据中心转发发送端，向 Unity 或外部客户端发包
 
-### 1) `launch/`：业务消息与链路帧生成
+如果改动这些端口，必须同步检查 `tcp/tcp_comm.py`、GNU Radio 流图和外部客户端配置。
 
-- `message_value_generate.py`
-	- 负责构造业务消息。
-	- 支持 `manual` 和 `random` 两种模式。
-	- 内置 `CRC8/CRC16` 查表计算，按命令字生成多帧数据：
-		- `0x0A01` 位置
-		- `0x0A02` 血量
-		- `0x0A03` 弹量
-		- `0x0A04` 经济与占点
-		- `0x0A05` 增益
-	- 已按协议修正 `0x0A05` 负载结构：去掉不需要的字段，补齐哨兵姿态字节，并统一发送端字节序。
+## 信息结构参考
 
-- `frame_generate.py`
-	- 负责链路层封装。
-	- 每 15 字节业务负载前添加：
-		- `access_code`（8 字节）
-		- `header_1`（2 字节）
-		- `header_2`（2 字节）
-	- `transmmit_mode`：
-		- `0`：信号链路 access code
-		- `1`：干扰链路 access code
+### `RoboMaster_Signal_Info`
 
-- `launch_tofile.py`
-	- 生成 `package.bin` 的入口脚本。
-	- 先构造业务消息，再封装链路帧并写入二进制文件。
+这个结构承载 GNU Radio 信号流解析结果，主要字段分为几类：
 
-- `launch.py`
-	- 项目启动脚本（当前用于生成 `package.bin` 的入口）。
+- 位置：`hero_position`、`engineer_position`、`infentry_position_1`、`infentry_position_2`、`drone_position`、`sentinel_position`
+- 血量：`hero_blood`、`engineer_blood`、`infentry_blood_1`、`infentry_blood_2`、`saven_blood`、`sentinel_blood`
+- 弹量：`hero_amnunition`、`infentry_amnunition_1`、`infentry_amnunition_2`、`drone_amnunition`、`sentinel_amnunition`
+- 经济与占点：`econmic_remain`、`economic_total`、`occupation_status`
+- 增益：`hero_gain`、`engineer_gain`、`infentry_gain_1`、`infentry_gain_2`、`sentinel_gain`、`sentinel_posture`
 
-### 2) `gnu radio /`：GFSK 发射/接收流图
+### `RoboMaster_Noise_Key`
 
-- `GFSK_Transmmit_signal.py`
-	- 由 GRC 导出的 Python 顶层流图。
-	- 关键链路：
-		- `file_source` 读取二进制数据
-		- `digital.gfsk_mod` 调制
-		- `iio_pluto_sink/source` 与 Pluto SDR 交互
-		- `digital.gfsk_demod` 解调
-		- `zeromq.push_sink` 输出字节流
-	- 提供噪声等级选择参数（`noise_1/noise_2/noise_3`）。
+这个结构承载 GNU Radio 噪声密钥流解析结果：
 
-- `GFSK-Transmmit-signal.grc`
-	- 信号发射与回环观察主流图。
+- `sdr_behavior`
+- `sdr_key_1` 到 `sdr_key_6`
 
-- `GFSK-Transmmit-noise.grc`
-	- 干扰发射流图（随机源 + GFSK 调制）。
+### `RadarMarkProcess`
 
-- `GFSK-Receiver.grc`
-	- 接收与解调流图，包含接收侧实验块。
+这个结构承载数据中心雷达标记状态：
 
-- `GFSK-loop.grc`
-	- 环路/联调版本流图（用于联合验证）。
+- 敌方状态：`IsOpponentHeroDebuffed`、`IsOpponentEngineerDebuffed`、`IsOpponentInfantry3Debuffed`、`IsOpponentInfantry4Debuffed`、`IsOpponentAerialMarked`、`IsOpponentSentryDebuffed`
+- 己方状态：`IsAllyHeroMarked`、`IsAllyEngineerMarked`、`IsAllyInfantry3Marked`、`IsAllyInfantry4Marked`、`IsAllyAerialMarked`、`IsAllySentryMarked`
 
-### 3) `frame_parser/`：接收数据解析
+### `RadarMessageAutoDecisionSynchronization`
 
-- `frame_parser.py`
-	- 负责接收端业务字段解析（当前由上层输入完整待解析负载）。
-	- 已按协议同步 `0x0A05` 的字段布局与偏移，包含哨兵姿态字段。
+这个结构承载数据中心自动决策同步信息：
 
-### 4) `gui/`：可视化调试
+- `EncryptionRank`
+- `IsModifierKeyAble`
 
-- 当前状态：Python 侧 GUI 原型已移除，目录预留。
-- 规划：后续整体 UI 将使用 Rust 重写，并作为库（lib）形式引入，通过 MQTT 与链路/分析模块通信。
+### `RadarInfo`
 
-### 5) `tcp_comm/`：TCP 收发与解析入口
+`RadarInfo` 是数据中心解析的组合结果，内部同时包含：
 
-- `tcp_comm.py`
-	- 作为 GNU Radio TCP 输出的接收端入口，内置断线后自动重连。
-	- 启动 4 个进程/线程：信号接收、噪声接收、数据中心发送、数据中心接收。
-	- 依赖解析包 `frame_parser/frame_parser.py`。
-
-- `main.py`
-	- TCP 入口聚合启动脚本，使用线程同时启动 4 个通道。
+- `radar_mark_process`
+- `radar_message_auto_decision_synchronization`
 
 ## 端到端流程
 
-1. `launch/message_value_generate.py` 生成业务层消息。
+1. `launch/message_value_generate.py` 和 `launch/noisekey_value_gengerate.py` 生成业务层消息。
 2. `launch/frame_generate.py` 将业务消息按 15 字节切片并封装链路头。
-3. `launch/launch.py` 输出 `package.bin`。
-4. `gnu radio /GFSK-Transmmit-signal.grc` 或对应 Python 流图读取 `package.bin`，执行 GFSK 调制并通过 Pluto 发射。
+3. `launch/launch_tofile.py` 输出 `message_package.bin` 和 `noisekey_package.bin`。
+4. GNU Radio 流图读取对应输入文件，执行 GFSK 调制并通过 Pluto 发射。
 5. 接收端流图完成解调后通过本地 TCP 服务输出。
-6. `main.py` 启动 TCP 端接收与转发，完成解析入口联调。
+6. `tcp/tcp_launch.py` 启动 TCP 端接收与转发，完成解析入口联调。
 
-## 快速使用（最小路径）
+## 快速使用
 
 ### 1) 生成待发数据
 
 ```bash
-cd launch
-python launch.py
+python launch/launch_tofile.py
 ```
-
-成功后会在 `launch/` 下生成 `package.bin`。
 
 ### 2) 启动 GNU Radio 流图
 
@@ -155,48 +112,47 @@ python launch.py
 - 打开并运行 `gnu radio /GFSK-Transmmit-signal.grc`
 - 或直接运行导出脚本 `gnu radio /GFSK_Transmmit_signal.py`
 
-### 3) 启动分析接收
+### 3) 启动 TCP 联调
 
 ```bash
-python main.py
+python tcp/tcp_launch.py
 ```
 
 ## 当前状态与注意事项
 
-- Python GUI 原型已下线，后续 UI 方案为 Rust lib + MQTT 通信。
-- 解析入口已迁移至 `frame_parser/frame_parser.py`，建议后续补上 CRC 校验与异常帧统计。
-- `tcp_comm/tcp_comm.py` 已支持断线重连，入口通过 `main.py` 启动 4 个通道。
-- GNU Radio 导出脚本中 `blocks_file_source` 路径写为 `.../tool/package.bin`，与当前仓库目录 `launch/package.bin` 可能不一致，运行前请确认并修改。
-- 文件与类名存在拼写 `Transmmit`（双 m），属于当前项目命名约定，引用时需保持一致。
+- `tcp/tcp_comm.py` 已支持断线重连。
+- 解析入口已迁移至 `parser/gnuradio_frame_parser.py` 和 `parser/datacenter_package_parser.py`。
+- GNU Radio 导出脚本中的文件路径需要和当前仓库目录一致，运行前请确认输入文件位置。
+- 文件与类名存在拼写 `Transmmit`（双 m）的情况，属于当前项目命名约定，引用时需保持一致。
 
 ## 后续建议
 
 1. 在解析链路中补充基于 `access_code + header` 的切帧器。
-2. 在 `frame_parser/frame_parser.py` 增加 CRC8/CRC16 校验与命令字分发解析。
-3. 设计并落地 Rust UI 库接口，明确与 Python 侧的 MQTT topic、QoS、消息格式约定。
-4. 统一 `package.bin` 产物路径，避免 `launch/` 与 `tool/` 的路径分叉。
+2. 在解析器中增加 CRC8/CRC16 校验与命令字分发解析。
+3. 统一 GNU Radio 输入文件路径，避免导出脚本与仓库目录分叉。
 
 ## 使用系统 GNU Radio（虚拟环境兼容）
 
-如果虚拟环境中无法通过 `pip` 安装 `gnuradio`，可以让虚拟环境使用系统已安装的 GNU Radio 包，常用方式：
+如果虚拟环境中无法通过 `pip` 安装 `gnuradio`，可以让虚拟环境使用系统已安装的 GNU Radio 包。
 
-- 临时（当前 shell 会话生效）：
+### 临时生效
 
 ```bash
 export PYTHONPATH=/usr/lib/python3/dist-packages:$PYTHONPATH
-# 然后在同一终端运行项目（示例）：
-/home/harryh/RADAR-2026/RADAR-SDR/radar-sdr/bin/python main.py
+/home/pinkpanda/linux-RADAR/RADAR-2026/RADAR-SDR/radar-sdr/bin/python tcp/tcp_launch.py
 ```
 
-- 永久（虚拟环境内生效）：
+### 永久生效
 
-编辑 `radar-sdr/pyvenv.cfg`，将 `include-system-site-packages = true`（若不存在则添加），然后重新激活虚拟环境：
+编辑 `radar-sdr/pyvenv.cfg`，将 `include-system-site-packages = true`，然后重新激活虚拟环境：
 
 ```bash
 source radar-sdr/bin/activate
 ```
 
-- 其他选项：使用系统包管理器或 conda 安装 GNU Radio：
+### 其他选项
+
+也可以使用系统包管理器或 conda 安装 GNU Radio：
 
 ```bash
 sudo apt update
@@ -205,10 +161,8 @@ sudo apt install gnuradio python3-gnuradio
 conda install -c conda-forge gnuradio pyqt
 ```
 
-如果你已经在仓库里有 `init.sh`（包含 `export PYTHONPATH=...` 的脚本），可以直接运行：
+如果仓库里有 `init.sh` 并包含 `export PYTHONPATH=...`，也可以直接运行：
 
 ```bash
 source init.sh
 ```
-
-以上任一方式能帮助虚拟环境在不直接用 pip 安装 `gnuradio` 的情况下导入系统的 GNU Radio 包。

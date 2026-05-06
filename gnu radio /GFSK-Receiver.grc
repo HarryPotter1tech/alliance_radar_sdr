@@ -228,7 +228,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: /home/harryh/RADAR-2026/RADAR-SDR/receive.bin
+    file: /home/pinkpanda/linux-RADAR/RADAR-2026/RADAR-SDR/receive.bin
     type: byte
     unbuffered: 'False'
     vlen: '1'
@@ -515,7 +515,7 @@ blocks:
     alias: ''
     comment: ''
     mode: '2'
-    port: '3000'
+    port: '2500'
     type: byte
     vlen: '1'
   states:
@@ -1184,4 +1184,3 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.7.0
