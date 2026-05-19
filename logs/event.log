@@ -28400,3 +28400,173 @@
 [2026-05-18 21:39:56]  Error connecting to gnu radio signal server: [Errno 111] 连接被拒绝
 [2026-05-18 21:39:56]  Error connecting to gnu radio noise key server: [Errno 111] 连接被拒绝
 [2026-05-18 21:39:56]  Data length: 45
+[2026-05-19 22:11:03]  Thread 'Thread-1 (tcp_gnuradio_noise_key_receiver)' started
+[2026-05-19 22:11:03]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:03]  Thread 'Thread-2 (tcp_datacenter_transmitter)' started
+[2026-05-19 22:11:03]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:03]  Thread 'Thread-3 (tcp_datacenter_receiver)' started
+[2026-05-19 22:11:03]  Initializing parser server
+[2026-05-19 22:11:03]  Initialized parser server, waiting for unity client to connect
+[2026-05-19 22:11:03]  Initializing parser client
+[2026-05-19 22:11:03]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:04]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:04]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:04]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:04]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:04]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:04]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:04]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:04]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:04]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:04]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:04]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:04]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:04]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:04]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:04]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:05]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:05]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:05]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:05]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:05]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:05]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:05]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:05]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:05]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:05]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:05]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:05]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:05]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:05]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:05]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:06]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:06]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:06]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:06]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:06]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:06]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:06]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:06]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:06]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:06]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:06]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:06]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:06]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:06]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:06]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:07]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:07]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:07]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:07]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:07]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:07]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:07]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:07]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:07]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:07]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:07]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:07]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:07]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:07]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:07]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:08]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:08]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:08]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:08]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:08]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:08]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:08]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:08]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:08]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:08]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:08]  Connecting to gnu radio noise key server
+[2026-05-19 22:11:08]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:11:08]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:08]  Thread 'Thread-1 (tcp_gnuradio_noise_key_receiver)' stopped
+[2026-05-19 22:11:09]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:11:09]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:43:59]  Thread 'Thread-1 (tcp_gnuradio_noise_key_receiver)' started
+[2026-05-19 22:43:59]  Connecting to gnu radio noise key server
+[2026-05-19 22:43:59]  Thread 'Thread-2 (tcp_datacenter_transmitter)' started
+[2026-05-19 22:43:59]  Thread 'Thread-3 (tcp_datacenter_receiver)' started
+[2026-05-19 22:43:59]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:43:59]  Initializing parser server
+[2026-05-19 22:43:59]  Initializing parser client
+[2026-05-19 22:43:59]  Initialized parser server, waiting for unity client to connect
+[2026-05-19 22:43:59]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:43:59]  Connecting to gnu radio noise key server
+[2026-05-19 22:43:59]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:43:59]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:43:59]  Connecting to gnu radio noise key server
+[2026-05-19 22:43:59]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:43:59]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:00]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:00]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:00]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:00]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:00]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:00]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:00]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:00]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:00]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:00]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:00]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:00]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:00]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:00]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:00]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:01]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:01]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:01]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:01]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:01]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:01]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:01]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:01]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:01]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:01]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:01]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:01]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:01]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:01]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:01]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:02]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:02]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:02]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:02]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:02]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:02]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:02]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:02]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:02]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:02]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:02]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:02]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:02]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:02]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:02]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:03]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:03]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:03]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:03]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:03]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:03]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:03]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:03]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:03]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:03]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:03]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:03]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:03]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:03]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:03]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:04]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:04]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:04]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:04]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:04]  Connecting to gnu radio noise key server
+[2026-05-19 22:44:04]  Error connecting to gnu radio noise key server: [Errno 111] Connection refused
+[2026-05-19 22:44:04]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:04]  Thread 'Thread-1 (tcp_gnuradio_noise_key_receiver)' stopped
+[2026-05-19 22:44:04]  Error to initialize parser client: [Errno 111] Connection refused
+[2026-05-19 22:44:04]  Error to initialize parser client: [Errno 111] Connection refused
