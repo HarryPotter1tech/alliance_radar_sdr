@@ -9,7 +9,7 @@ from logs.event_logger import log, log_data, log_thread_start, log_thread_stop
 
 
 GFSK_NOISE_PATH = (
-    Path(__file__).resolve().parent.parent / "gnu radio " / "GFSK_Receive_Noise.py"
+    Path(__file__).resolve().parent.parent / "gnu radio " / "GFSK_Receiver_Noise.py"
 )
 GFSK_SIGNAL_PATH = (
     Path(__file__).resolve().parent.parent / "gnu radio " / "GFSK_Receiver_Signal.py"
@@ -39,7 +39,7 @@ class GnuradioController:
         thread_name = threading.current_thread().name
         log_thread_start("event", thread_name)
         noise_spec = importlib.util.spec_from_file_location(
-            "GFSK_Receive_Noise", GFSK_NOISE_PATH
+            "GFSK_Receiver_Noise", GFSK_NOISE_PATH
         )
         if noise_spec is None or noise_spec.loader is None:
             raise RuntimeError("Failed to load GFSK noise receiver module")
@@ -48,7 +48,7 @@ class GnuradioController:
         noise_spec.loader.exec_module(noise_module)
 
         qapp = Qt.QApplication([])
-        noise_tb = noise_module.GFSK_Receive_Noise()
+        noise_tb = noise_module.GFSK_Receiver_Noise()
 
         # In noise-only mode we do not start or load the signal receiver.
         # Also treat any outward-facing signal info as zero.
