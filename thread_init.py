@@ -6,12 +6,10 @@ from control.gnuradio_control import GnuradioController
 from parser.datacenter_package_parser import RadarInfo
 from parser.gnuradio_frame_parser import RoboMaster_Noise_Key, RoboMaster_Signal_Info
 from parser.noise_window_tracker import NoiseKeyWindowTracker
-from parser.signal_window_tracker import SignalWindowTracker
 from tcp.tcp_comm import (
     tcp_datacenter_receiver,
     tcp_datacenter_transmitter,
     tcp_gnuradio_noise_key_receiver,
-    tcp_gnuradio_signal_receiver,
 )
 
 
@@ -67,14 +65,9 @@ def main() -> None:
     gnuradio_controller = GnuradioController(shared_state, lock)
     gnuradio_controller.start()
 
-    _wait_for_port("127.0.0.1", 2000, 1.0)
+    # Only wait for noise key server in noise-only mode
     _wait_for_port("127.0.0.1", 2500, 1.0)
 
-    signal_thread = threading.Thread(
-        target=tcp_gnuradio_signal_receiver,
-        args=(signal_info, lock, signal_stop, SignalWindowTracker(), shared_state),
-        daemon=True,
-    )
     noise_key_thread = threading.Thread(
         target=tcp_gnuradio_noise_key_receiver,
         args=(
@@ -96,12 +89,10 @@ def main() -> None:
         args=(radar_info, lock, shared_state),
         daemon=True,
     )
-    signal_thread.start()
     noise_key_thread.start()
     transmitter_thread.start()
     receiver_thread.start()
 
-    signal_thread.join()
     noise_key_thread.join()
     transmitter_thread.join()
     receiver_thread.join()

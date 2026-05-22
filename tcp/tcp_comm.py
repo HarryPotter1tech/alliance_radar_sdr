@@ -9,7 +9,6 @@ from parser.gnuradio_frame_parser import (
 )
 from parser.datacenter_package_parser import DataCenterPackageParser, RadarInfo
 from parser.noise_window_tracker import NoiseKeyWindowTracker
-from parser.signal_window_tracker import SignalWindowTracker
 
 
 from logs.event_logger import log, log_data, log_thread_start, log_thread_stop
@@ -20,66 +19,6 @@ def _update_dataclass_inplace(target, source) -> bool:
         return False
     target.__dict__.update(source.__dict__)
     return True
-
-
-def tcp_gnuradio_signal_receiver(
-    robomaster_signal_info: RoboMaster_Signal_Info,
-    lock: threading.Lock,
-    stop_event: threading.Event | None = None,
-    tracker: SignalWindowTracker | None = None,
-    shared_state: dict | None = None,
-):
-    server_address = ("127.0.0.1", 2000)
-    frameparser = GnuRadioFrameParser("signal")
-    _robomaster_signal_info: RoboMaster_Signal_Info = RoboMaster_Signal_Info()
-    thread_name = threading.current_thread().name
-    log_thread_start("event", thread_name)
-    try:
-        while True:
-            if stop_event and stop_event.is_set():
-                break
-            log("event", "Connecting to gnu radio receiver server")
-            tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            try:
-                tcp_socket.connect(server_address)
-                log("event", "Connected to gnu radio signal server")
-                buffer: bytes = b""
-                while True:
-                    if stop_event and stop_event.is_set():
-                        break
-                    try:
-                        chunk = tcp_socket.recv(1024)
-                    except socket.error as e:
-                        log("event", f"Error connecting to gnu radio signal server: {e}")
-                        break
-                    if not chunk:
-                        log("event", "Connection closed, reconnecting...")
-                        break
-                    buffer += chunk
-                    if len(buffer) >= 400:
-                        with lock:
-                            parsed = frameparser.payload_parse(buffer)
-                            _update_dataclass_inplace(robomaster_signal_info, parsed)
-                            if parsed is not None:
-                                log_data("parsed", "signal_info", parsed)
-                            if tracker:
-                                tracked = tracker.track(buffer)
-                                if tracked.value is not None and shared_state is not None:
-                                    shared_state["signal_payload"] = tracked.value
-                        if robomaster_signal_info == _robomaster_signal_info:
-                            log("event", "Parsed signal data failed")
-                        else:
-                            log_data("parsed", "signal_info_state", robomaster_signal_info)
-                        buffer = b""
-            except socket.error as e:
-                log("event", f"Error connecting to gnu radio signal server: {e}")
-            finally:
-                tcp_socket.close()
-            if stop_event and stop_event.is_set():
-                break
-            time.sleep(0.2)
-    finally:
-        log_thread_stop("event", thread_name)
 
 
 def tcp_gnuradio_noise_key_receiver(
@@ -111,7 +50,10 @@ def tcp_gnuradio_noise_key_receiver(
                     try:
                         chunk = tcp_socket.recv(1024)
                     except socket.error as e:
-                        log("event", f"Error connecting to gnu radio noise key server: {e}")
+                        log(
+                            "event",
+                            f"Error connecting to gnu radio noise key server: {e}",
+                        )
                         break
                     if not chunk:
                         log("event", "Connection closed, reconnecting...")
@@ -149,7 +91,9 @@ def tcp_gnuradio_noise_key_receiver(
                                             shared_state["real_key_history"] = (
                                                 tracker.real_key_history
                                             )
-                                            log_data("parsed", "real_key", tracked.real_key)
+                                            log_data(
+                                                "parsed", "real_key", tracked.real_key
+                                            )
                         if robomaster_noise_key == _robomaster_noise_key:
                             log("event", "Parsed noise key data failed")
                         buffer = b""
@@ -209,18 +153,28 @@ def tcp_datacenter_receiver(
                                         log_data(
                                             "event",
                                             "rank_update",
-                                            {"rank": rank, "noise_grade": shared_state["noise_grade"]},
+                                            {
+                                                "rank": rank,
+                                                "noise_grade": shared_state[
+                                                    "noise_grade"
+                                                ],
+                                            },
                                         )
                             if parsed is not None:
                                 raw_hex = buffer[:4].hex(" ")
                                 rank = radar_info.radar_message_auto_decision_synchronization.EncryptionRank
                                 is_modify = radar_info.radar_message_auto_decision_synchronization.IsModifierKeyAble
-                                log_data("unity_rx", "received_package", {
-                                    "raw_hex": raw_hex,
-                                    "rank": rank,
-                                    "modify_key": int(is_modify),
-                                    "radar_info": radar_info,
-                                }, tag="[unity]")
+                                log_data(
+                                    "unity_rx",
+                                    "received_package",
+                                    {
+                                        "raw_hex": raw_hex,
+                                        "rank": rank,
+                                        "modify_key": int(is_modify),
+                                        "radar_info": radar_info,
+                                    },
+                                    tag="[unity]",
+                                )
                                 log_data("parsed", "radar_info_state", radar_info)
                                 buffer = b""
                 except socket.error as e:
@@ -244,7 +198,10 @@ def tcp_datacenter_transmitter(
         while True:
             try:
                 tcp_socket.bind(server_address)
-                log("event", "Initialized parser server, waiting for unity client to connect")
+                log(
+                    "event",
+                    "Initialized parser server, waiting for unity client to connect",
+                )
                 break
             except socket.error as e:
                 log("event", f"Error to initialize parser server: {e}")
@@ -272,16 +229,32 @@ def tcp_datacenter_transmitter(
                             + 0x0A07.to_bytes(2, byteorder="big")
                             + signal_info.hero_position[0].to_bytes(2, byteorder="big")
                             + signal_info.hero_position[1].to_bytes(2, byteorder="big")
-                            + signal_info.engineer_position[0].to_bytes(2, byteorder="big")
-                            + signal_info.engineer_position[1].to_bytes(2, byteorder="big")
-                            + signal_info.infentry_position_1[0].to_bytes(2, byteorder="big")
-                            + signal_info.infentry_position_1[1].to_bytes(2, byteorder="big")
-                            + signal_info.infentry_position_2[0].to_bytes(2, byteorder="big")
-                            + signal_info.infentry_position_2[1].to_bytes(2, byteorder="big")
+                            + signal_info.engineer_position[0].to_bytes(
+                                2, byteorder="big"
+                            )
+                            + signal_info.engineer_position[1].to_bytes(
+                                2, byteorder="big"
+                            )
+                            + signal_info.infentry_position_1[0].to_bytes(
+                                2, byteorder="big"
+                            )
+                            + signal_info.infentry_position_1[1].to_bytes(
+                                2, byteorder="big"
+                            )
+                            + signal_info.infentry_position_2[0].to_bytes(
+                                2, byteorder="big"
+                            )
+                            + signal_info.infentry_position_2[1].to_bytes(
+                                2, byteorder="big"
+                            )
                             + signal_info.drone_position[0].to_bytes(2, byteorder="big")
                             + signal_info.drone_position[1].to_bytes(2, byteorder="big")
-                            + signal_info.sentinel_position[0].to_bytes(2, byteorder="big")
-                            + signal_info.sentinel_position[1].to_bytes(2, byteorder="big")
+                            + signal_info.sentinel_position[0].to_bytes(
+                                2, byteorder="big"
+                            )
+                            + signal_info.sentinel_position[1].to_bytes(
+                                2, byteorder="big"
+                            )
                             + signal_info.hero_blood.to_bytes(1, "big")
                             + signal_info.engineer_blood.to_bytes(1, "big")
                             + signal_info.infentry_blood_1.to_bytes(1, "big")

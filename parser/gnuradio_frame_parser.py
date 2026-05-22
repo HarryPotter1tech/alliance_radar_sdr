@@ -75,7 +75,7 @@ class GnuRadioFrameParser:
             for i in range(0, len(self.message_package), 1):
                 # len(message_package)=26+14+12+12+38=102
                 cmd_id: int = int.from_bytes(
-                    self.message_package[i : i + 2], byteorder="big"
+                    self.message_package[i : i + 2], byteorder="little"
                 )
 
                 if cmd_id == info.cmd_id_1:
@@ -272,7 +272,7 @@ class GnuRadioFrameParser:
             # print(self.receive_mode)
             for i in range(0, len(self.message_package), 1):
                 cmd_id: int = int.from_bytes(
-                    self.message_package[i : i + 2], byteorder="big"
+                    self.message_package[i : i + 2], byteorder="little"
                 )
                 if cmd_id == noise_key.cmd_id_6:
                     noise_key.sdr_key_1 = int.from_bytes(

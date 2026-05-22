@@ -262,7 +262,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: /home/pinkpanda/linux-RADAR/RADAR-2026/RADAR-SDR/receive.bin
+    file: /home/yukikaze/Documents/workspace/radar/alliance_radar_sdr/receive.bin
     type: byte
     unbuffered: 'False'
     vlen: '1'
@@ -280,7 +280,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: /home/pinkpanda/linux-RADAR/RADAR-2026/RADAR-SDR/logs/raw_data.bin
+    file: /home/yukikaze/Documents/workspace/radar/alliance_radar_sdr/logs/raw_data.bin
     type: complex
     unbuffered: 'False'
     vlen: '1'
@@ -288,7 +288,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [256, 108.0]
+    coordinate: [264, 100.0]
     rotation: 0
     state: true
 - name: blocks_pack_k_bits_bb_0
@@ -733,3 +733,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.12.0
