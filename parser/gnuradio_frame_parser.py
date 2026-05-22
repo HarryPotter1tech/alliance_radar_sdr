@@ -81,189 +81,189 @@ class GnuRadioFrameParser:
                 if cmd_id == info.cmd_id_1:
                     info.hero_position[0] = int.from_bytes(
                         self.message_package[i + 2 : i + 4],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.hero_position[1] = int.from_bytes(
                         self.message_package[i + 4 : i + 6],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.engineer_position[0] = int.from_bytes(
                         self.message_package[i + 6 : i + 8],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.engineer_position[1] = int.from_bytes(
                         self.message_package[i + 8 : i + 10],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.infentry_position_1[0] = int.from_bytes(
                         self.message_package[i + 10 : i + 12],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.infentry_position_1[1] = int.from_bytes(
                         self.message_package[i + 12 : i + 14],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.infentry_position_2[0] = int.from_bytes(
                         self.message_package[i + 14 : i + 16],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.infentry_position_2[1] = int.from_bytes(
                         self.message_package[i + 16 : i + 18],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.drone_position[0] = int.from_bytes(
                         self.message_package[i + 18 : i + 20],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.drone_position[1] = int.from_bytes(
                         self.message_package[i + 20 : i + 22],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.sentinel_position[0] = int.from_bytes(
                         self.message_package[i + 22 : i + 24],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
                     info.sentinel_position[1] = int.from_bytes(
                         self.message_package[i + 24 : i + 26],
-                        byteorder="big",
+                        byteorder="little",
                         signed=True,
                     )
 
                 elif cmd_id == info.cmd_id_2:
                     info.hero_blood = int.from_bytes(
-                        self.message_package[i + 2 : i + 4], byteorder="big"
+                        self.message_package[i + 2 : i + 4], byteorder="little"
                     )
                     info.engineer_blood = int.from_bytes(
-                        self.message_package[i + 4 : i + 6], byteorder="big"
+                        self.message_package[i + 4 : i + 6], byteorder="little"
                     )
                     info.infentry_blood_1 = int.from_bytes(
-                        self.message_package[i + 6 : i + 8], byteorder="big"
+                        self.message_package[i + 6 : i + 8], byteorder="little"
                     )
                     info.infentry_blood_2 = int.from_bytes(
-                        self.message_package[i + 8 : i + 10], byteorder="big"
+                        self.message_package[i + 8 : i + 10], byteorder="little"
                     )
                     info.saven_blood = int.from_bytes(
-                        self.message_package[i + 10 : i + 12], byteorder="big"
+                        self.message_package[i + 10 : i + 12], byteorder="little"
                     )
                     info.sentinel_blood = int.from_bytes(
-                        self.message_package[i + 12 : i + 14], byteorder="big"
+                        self.message_package[i + 12 : i + 14], byteorder="little"
                     )
 
                 elif cmd_id == info.cmd_id_3:
                     info.hero_amnunition = int.from_bytes(
-                        self.message_package[i + 2 : i + 4], byteorder="big"
+                        self.message_package[i + 2 : i + 4], byteorder="little"
                     )
                     info.infentry_amnunition_1 = int.from_bytes(
-                        self.message_package[i + 4 : i + 6], byteorder="big"
+                        self.message_package[i + 4 : i + 6], byteorder="little"
                     )
                     info.infentry_amnunition_2 = int.from_bytes(
-                        self.message_package[i + 6 : i + 8], byteorder="big"
+                        self.message_package[i + 6 : i + 8], byteorder="little"
                     )
                     info.drone_amnunition = int.from_bytes(
-                        self.message_package[i + 8 : i + 10], byteorder="big"
+                        self.message_package[i + 8 : i + 10], byteorder="little"
                     )
                     info.sentinel_amnunition = int.from_bytes(
-                        self.message_package[i + 10 : i + 12], byteorder="big"
+                        self.message_package[i + 10 : i + 12], byteorder="little"
                     )
 
                 elif cmd_id == info.cmd_id_4:
                     info.econmic_remain = int.from_bytes(
-                        self.message_package[i + 2 : i + 4], byteorder="big"
+                        self.message_package[i + 2 : i + 4], byteorder="little"
                     )
                     info.economic_total = int.from_bytes(
-                        self.message_package[i + 4 : i + 6], byteorder="big"
+                        self.message_package[i + 4 : i + 6], byteorder="little"
                     )
                     info.occupation_status = self.message_package[i + 6 : i + 10]
 
                 elif cmd_id == info.cmd_id_5:
                     info.hero_gain[0] = int.from_bytes(
-                        self.message_package[i + 2 : i + 3], byteorder="big"
+                        self.message_package[i + 2 : i + 3], byteorder="little"
                     )  # 1 byte
                     info.hero_gain[1] = int.from_bytes(
-                        self.message_package[i + 3 : i + 5], byteorder="big"
+                        self.message_package[i + 3 : i + 5], byteorder="little"
                     )  # 2 byte
                     info.hero_gain[2] = int.from_bytes(
-                        self.message_package[i + 5 : i + 6], byteorder="big"
+                        self.message_package[i + 5 : i + 6], byteorder="little"
                     )  # 1 byte
                     info.hero_gain[3] = int.from_bytes(
-                        self.message_package[i + 6 : i + 7], byteorder="big"
+                        self.message_package[i + 6 : i + 7], byteorder="little"
                     )  # 1 byte
                     info.hero_gain[4] = int.from_bytes(
-                        self.message_package[i + 7 : i + 9], byteorder="big"
+                        self.message_package[i + 7 : i + 9], byteorder="little"
                     )  # 2 byte
                     info.engineer_gain[0] = int.from_bytes(
-                        self.message_package[i + 9 : i + 10], byteorder="big"
+                        self.message_package[i + 9 : i + 10], byteorder="little"
                     )  # 1 byte
                     info.engineer_gain[1] = int.from_bytes(
-                        self.message_package[i + 10 : i + 12], byteorder="big"
+                        self.message_package[i + 10 : i + 12], byteorder="little"
                     )  # 2 byte
                     info.engineer_gain[2] = int.from_bytes(
-                        self.message_package[i + 12 : i + 13], byteorder="big"
+                        self.message_package[i + 12 : i + 13], byteorder="little"
                     )  # 1 byte
                     info.engineer_gain[3] = int.from_bytes(
-                        self.message_package[i + 13 : i + 14], byteorder="big"
+                        self.message_package[i + 13 : i + 14], byteorder="little"
                     )  # 1 byte
                     info.engineer_gain[4] = int.from_bytes(
-                        self.message_package[i + 14 : i + 16], byteorder="big"
+                        self.message_package[i + 14 : i + 16], byteorder="little"
                     )  # 2 byte
                     info.infentry_gain_1[0] = int.from_bytes(
-                        self.message_package[i + 16 : i + 17], byteorder="big"
+                        self.message_package[i + 16 : i + 17], byteorder="little"
                     )  # 1 byte
                     info.infentry_gain_1[1] = int.from_bytes(
-                        self.message_package[i + 17 : i + 19], byteorder="big"
+                        self.message_package[i + 17 : i + 19], byteorder="little"
                     )  # 2 byte
                     info.infentry_gain_1[2] = int.from_bytes(
-                        self.message_package[i + 19 : i + 20], byteorder="big"
+                        self.message_package[i + 19 : i + 20], byteorder="little"
                     )  # 1 byte
                     info.infentry_gain_1[3] = int.from_bytes(
-                        self.message_package[i + 20 : i + 21], byteorder="big"
+                        self.message_package[i + 20 : i + 21], byteorder="little"
                     )  # 1 byte
                     info.infentry_gain_1[4] = int.from_bytes(
-                        self.message_package[i + 21 : i + 23], byteorder="big"
+                        self.message_package[i + 21 : i + 23], byteorder="little"
                     )  # 2 byte
                     info.infentry_gain_2[0] = int.from_bytes(
-                        self.message_package[i + 23 : i + 24], byteorder="big"
+                        self.message_package[i + 23 : i + 24], byteorder="little"
                     )  # 1 byte
                     info.infentry_gain_2[1] = int.from_bytes(
-                        self.message_package[i + 24 : i + 26], byteorder="big"
+                        self.message_package[i + 24 : i + 26], byteorder="little"
                     )  # 2 byte
                     info.infentry_gain_2[2] = int.from_bytes(
-                        self.message_package[i + 26 : i + 27], byteorder="big"
+                        self.message_package[i + 26 : i + 27], byteorder="little"
                     )  # 1 byte
                     info.infentry_gain_2[3] = int.from_bytes(
-                        self.message_package[i + 27 : i + 28], byteorder="big"
+                        self.message_package[i + 27 : i + 28], byteorder="little"
                     )  # 1 byte
                     info.infentry_gain_2[4] = int.from_bytes(
-                        self.message_package[i + 28 : i + 30], byteorder="big"
+                        self.message_package[i + 28 : i + 30], byteorder="little"
                     )  # 2 byte
                     info.sentinel_gain[0] = int.from_bytes(
-                        self.message_package[i + 30 : i + 31], byteorder="big"
+                        self.message_package[i + 30 : i + 31], byteorder="little"
                     )  # 1 byte
                     info.sentinel_gain[1] = int.from_bytes(
-                        self.message_package[i + 31 : i + 33], byteorder="big"
+                        self.message_package[i + 31 : i + 33], byteorder="little"
                     )  # 2 byte
                     info.sentinel_gain[2] = int.from_bytes(
-                        self.message_package[i + 33 : i + 34], byteorder="big"
+                        self.message_package[i + 33 : i + 34], byteorder="little"
                     )  # 1 byte
                     info.sentinel_gain[3] = int.from_bytes(
-                        self.message_package[i + 34 : i + 35], byteorder="big"
+                        self.message_package[i + 34 : i + 35], byteorder="little"
                     )  # 1 byte
                     info.sentinel_gain[4] = int.from_bytes(
-                        self.message_package[i + 35 : i + 37], byteorder="big"
+                        self.message_package[i + 35 : i + 37], byteorder="little"
                     )  # 2 byte
                     info.sentinel_posture = int.from_bytes(
-                        self.message_package[i + 37 : i + 38], byteorder="big"
+                        self.message_package[i + 37 : i + 38], byteorder="little"
                     )  # 1 byte
             return info
 
@@ -276,22 +276,22 @@ class GnuRadioFrameParser:
                 )
                 if cmd_id == noise_key.cmd_id_6:
                     noise_key.sdr_key_1 = int.from_bytes(
-                        self.message_package[i + 2 : i + 3], byteorder="big"
+                        self.message_package[i + 2 : i + 3], byteorder="little"
                     )  # 1 byte
                     noise_key.sdr_key_2 = int.from_bytes(
-                        self.message_package[i + 3 : i + 4], byteorder="big"
+                        self.message_package[i + 3 : i + 4], byteorder="little"
                     )  # 1 byte
                     noise_key.sdr_key_3 = int.from_bytes(
-                        self.message_package[i + 4 : i + 5], byteorder="big"
+                        self.message_package[i + 4 : i + 5], byteorder="little"
                     )  # 1 byte
                     noise_key.sdr_key_4 = int.from_bytes(
-                        self.message_package[i + 5 : i + 6], byteorder="big"
+                        self.message_package[i + 5 : i + 6], byteorder="little"
                     )  # 1 byte
                     noise_key.sdr_key_5 = int.from_bytes(
-                        self.message_package[i + 6 : i + 7], byteorder="big"
+                        self.message_package[i + 6 : i + 7], byteorder="little"
                     )  # 1 byte
                     noise_key.sdr_key_6 = int.from_bytes(
-                        self.message_package[i + 7 : i + 8], byteorder="big"
+                        self.message_package[i + 7 : i + 8], byteorder="little"
                     )  # 1 byte
                     # print(self.message_package[i : i + 8])
                     return noise_key

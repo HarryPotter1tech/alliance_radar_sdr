@@ -1,6 +1,5 @@
 import importlib.util
 import threading
-import time
 from pathlib import Path
 
 from PyQt5 import Qt
@@ -41,53 +40,72 @@ class GnuradioController:
         noise_spec = importlib.util.spec_from_file_location(
             "GFSK_Receiver_Noise", GFSK_NOISE_PATH
         )
-        if noise_spec is None or noise_spec.loader is None:
-            raise RuntimeError("Failed to load GFSK noise receiver module")
-        log("event", "Loaded GFSK noise receiver module (noise-only mode)")
+        signal_spec = importlib.util.spec_from_file_location(
+            "GFSK_Receiver_Signal", GFSK_SIGNAL_PATH
+        )
+        if (
+            noise_spec is None
+            or noise_spec.loader is None
+            or signal_spec is None
+            or signal_spec.loader is None
+        ):
+            raise RuntimeError("Failed to load GFSK receiver modules")
+        log("event", "Loaded GFSK receiver modules")
         noise_module = importlib.util.module_from_spec(noise_spec)
+        signal_module = importlib.util.module_from_spec(signal_spec)
         noise_spec.loader.exec_module(noise_module)
+        signal_spec.loader.exec_module(signal_module)
 
         qapp = Qt.QApplication([])
         noise_tb = noise_module.GFSK_Receiver_Noise()
+        signal_tb = signal_module.GFSK_Receiver_Signal()
 
-        # In noise-only mode we do not start or load the signal receiver.
-        # Also treat any outward-facing signal info as zero.
-        noise_grade, enemy_side, _ = self._read_state()
-        signal_frequency = 0
+        noise_grade, enemy_side, signal_frequency = self._read_state()
         noise_tb.set_enemyside(enemy_side)
         noise_tb.set_noise_grade_chooser(noise_grade)
         noise_tb.set_signal_frequency(signal_frequency)
+        signal_tb.set_enemyside(enemy_side)
+        signal_tb.set_noise_grade_chooser(noise_grade)
+        signal_tb.set_signal_frequency(signal_frequency)
 
         noise_tb.start()
         noise_tb.show()
+        signal_tb.start()
+        signal_tb.show()
 
         last_noise_grade = noise_grade
         last_enemy_side = enemy_side
         last_signal_frequency = signal_frequency
-        # Record initial state; for noise-only branch signal info is 0
         log_data(
             "gnuradiocontrol",
             "initial_state",
             {
                 "noise_grade": noise_grade,
                 "enemy_side": enemy_side,
-                "signal_frequency": 0,
+                "signal_frequency": signal_frequency,
             },
         )
 
         def poll():
             nonlocal last_noise_grade, last_enemy_side, last_signal_frequency
-            noise_grade, enemy_side, _ = self._read_state()
+            noise_grade, enemy_side, signal_frequency = self._read_state()
             if noise_grade != last_noise_grade:
                 noise_tb.set_noise_grade_chooser(noise_grade)
+                signal_tb.set_noise_grade_chooser(noise_grade)
                 last_noise_grade = noise_grade
                 log_data("gnuradiocontrol", "noise_grade_changed", noise_grade)
             if enemy_side != last_enemy_side:
                 noise_tb.set_enemyside(enemy_side)
+                signal_tb.set_enemyside(enemy_side)
                 last_enemy_side = enemy_side
                 log_data("gnuradiocontrol", "enemy_side_changed", enemy_side)
-            # In noise-only mode we ignore dynamic signal frequency changes
-            # and always treat sent signal info as 0.
+            if signal_frequency != last_signal_frequency:
+                noise_tb.set_signal_frequency(signal_frequency)
+                signal_tb.set_signal_frequency(signal_frequency)
+                last_signal_frequency = signal_frequency
+                log_data(
+                    "gnuradiocontrol", "signal_frequency_changed", signal_frequency
+                )
 
         timer = Qt.QTimer()
         timer.timeout.connect(poll)

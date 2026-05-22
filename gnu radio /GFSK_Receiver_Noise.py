@@ -7,29 +7,41 @@
 # GNU Radio Python Flow Graph
 # Title: GFSK-Receiver-Noise
 # Author: huangziang
-# GNU Radio version: 3.10.12.0
+# GNU Radio version: 3.10.1.1
+
+from packaging.version import Version as StrictVersion
+
+if __name__ == '__main__':
+    import ctypes
+    import sys
+    if sys.platform.startswith('linux'):
+        try:
+            x11 = ctypes.cdll.LoadLibrary('libX11.so')
+            x11.XInitThreads()
+        except:
+            print("Warning: failed to XInitThreads()")
 
 from PyQt5 import Qt
-from gnuradio import qtgui
 from PyQt5.QtCore import QObject, pyqtSlot
+from gnuradio import qtgui
+from gnuradio.filter import firdes
+import sip
 from gnuradio import blocks
 from gnuradio import digital
 from gnuradio import filter
-from gnuradio.filter import firdes
 from gnuradio import gr
 from gnuradio.fft import window
 import sys
 import signal
-from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import iio
 from gnuradio import network
-import sip
-import threading
 
 
+
+from gnuradio import qtgui
 
 class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
 
@@ -40,8 +52,8 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
-        except BaseException as exc:
-            print(f"Qt GUI: Could not set Icon: {str(exc)}", file=sys.stderr)
+        except:
+            pass
         self.top_scroll_layout = Qt.QVBoxLayout()
         self.setLayout(self.top_scroll_layout)
         self.top_scroll = Qt.QScrollArea()
@@ -54,15 +66,15 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "GFSK_Receiver_Noise")
+        self.settings = Qt.QSettings("GNU Radio", "GFSK_Receiver_Noise")
 
         try:
-            geometry = self.settings.value("geometry")
-            if geometry:
-                self.restoreGeometry(geometry)
-        except BaseException as exc:
-            print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
-        self.flowgraph_started = threading.Event()
+            if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
+                self.restoreGeometry(self.settings.value("geometry").toByteArray())
+            else:
+                self.restoreGeometry(self.settings.value("geometry"))
+        except:
+            pass
 
         ##################################################
         # Variables
@@ -121,7 +133,6 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
-
         self.qtgui_time_sink_x_0_0_0_0_0_0_0_2_0 = qtgui.time_sink_c(
             2048, #size
             sample_rate*2, #samp_rate
@@ -225,13 +236,13 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
             8192, #size
             window.WIN_HAMMING, #wintype
             noise_frequency, #fc
-            (sample_rate*2), #bw
+            sample_rate*2, #bw
             "GFSK-noise滤波后频率图", #name
             1,
             None # parent
         )
         self.qtgui_freq_sink_x_0_0_1.set_update_time(1)
-        self.qtgui_freq_sink_x_0_0_1.set_y_axis((-70), 0)
+        self.qtgui_freq_sink_x_0_0_1.set_y_axis(-70, 0)
         self.qtgui_freq_sink_x_0_0_1.set_y_label('db', 'dB')
         self.qtgui_freq_sink_x_0_0_1.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
         self.qtgui_freq_sink_x_0_0_1.enable_autoscale(True)
@@ -335,7 +346,7 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
         self.top_layout.addWidget(self._enemyside_group_box)
         self.digital_gfsk_demod_0_0 = digital.gfsk_demod(
             samples_per_symbol=52,
-            sensitivity=(1/noise_sensitivity),
+            sensitivity=1/noise_sensitivity,
             gain_mu=0.175,
             mu=0.5,
             omega_relative_limit=0.005,
@@ -346,8 +357,6 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
           12, 'access_code+header')
         self.blocks_stream_to_tagged_stream_0_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 15, "packet_len")
         self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(8)
-        self.blocks_file_sink_0_0_0_0 = blocks.file_sink(gr.sizeof_gr_complex*1, '/home/yukikaze/Documents/workspace/radar/alliance_radar_sdr/logs/raw_data.bin', False)
-        self.blocks_file_sink_0_0_0_0.set_unbuffered(False)
         self.blocks_file_sink_0_0_0 = blocks.file_sink(gr.sizeof_char*1, '/home/yukikaze/Documents/workspace/radar/alliance_radar_sdr/receive.bin', False)
         self.blocks_file_sink_0_0_0.set_unbuffered(False)
         self.blocks_char_to_float_0_0_0 = blocks.char_to_float(1, 1)
@@ -363,7 +372,6 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
         self.connect((self.digital_correlate_access_code_xx_ts_0_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
         self.connect((self.digital_gfsk_demod_0_0, 0), (self.blocks_char_to_float_0_0_0, 0))
         self.connect((self.digital_gfsk_demod_0_0, 0), (self.digital_correlate_access_code_xx_ts_0_0, 0))
-        self.connect((self.iio_pluto_source_1, 0), (self.blocks_file_sink_0_0_0_0, 0))
         self.connect((self.iio_pluto_source_1, 0), (self.low_pass_filter_0_0, 0))
         self.connect((self.low_pass_filter_0_0, 0), (self.digital_gfsk_demod_0_0, 0))
         self.connect((self.low_pass_filter_0_0, 0), (self.qtgui_freq_sink_x_0_0_1, 0))
@@ -371,7 +379,7 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "GFSK_Receiver_Noise")
+        self.settings = Qt.QSettings("GNU Radio", "GFSK_Receiver_Noise")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -440,7 +448,7 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
         self.sample_rate = sample_rate
         self.iio_pluto_source_1.set_samplerate(self.sample_rate)
         self.low_pass_filter_0_0.set_taps(firdes.low_pass(1, self.sample_rate, 500000, 10000, window.WIN_HAMMING, 6.76))
-        self.qtgui_freq_sink_x_0_0_1.set_frequency_range(self.noise_frequency, (self.sample_rate*2))
+        self.qtgui_freq_sink_x_0_0_1.set_frequency_range(self.noise_frequency, self.sample_rate*2)
         self.qtgui_time_sink_x_0_0_0_0_0_0_0_1_0.set_samp_rate(self.sample_rate / self.SPS)
         self.qtgui_time_sink_x_0_0_0_0_0_0_0_2_0.set_samp_rate(self.sample_rate*2)
 
@@ -462,7 +470,7 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
     def set_noise_frequency(self, noise_frequency):
         self.noise_frequency = noise_frequency
         self.iio_pluto_source_1.set_frequency(self.noise_frequency)
-        self.qtgui_freq_sink_x_0_0_1.set_frequency_range(self.noise_frequency, (self.sample_rate*2))
+        self.qtgui_freq_sink_x_0_0_1.set_frequency_range(self.noise_frequency, self.sample_rate*2)
 
     def get_noise_bandwidth(self):
         return self.noise_bandwidth
@@ -482,12 +490,14 @@ class GFSK_Receiver_Noise(gr.top_block, Qt.QWidget):
 
 def main(top_block_cls=GFSK_Receiver_Noise, options=None):
 
+    if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
+        style = gr.prefs().get_string('qtgui', 'style', 'raster')
+        Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
     tb = top_block_cls()
 
     tb.start()
-    tb.flowgraph_started.set()
 
     tb.show()
 

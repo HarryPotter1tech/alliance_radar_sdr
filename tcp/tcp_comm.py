@@ -1,4 +1,3 @@
-import os
 import socket
 import threading
 import time
@@ -19,6 +18,67 @@ def _update_dataclass_inplace(target, source) -> bool:
         return False
     target.__dict__.update(source.__dict__)
     return True
+
+
+def tcp_gnuradio_signal_receiver(
+    robomaster_signal_info: RoboMaster_Signal_Info,
+    lock: threading.Lock,
+    stop_event: threading.Event | None = None,
+    shared_state: dict | None = None,
+):
+    server_address = ("127.0.0.1", 2000)
+    frameparser = GnuRadioFrameParser("signal")
+    _robomaster_signal_info: RoboMaster_Signal_Info = RoboMaster_Signal_Info()
+    thread_name = threading.current_thread().name
+    log_thread_start("event", thread_name)
+    try:
+        while True:
+            if stop_event and stop_event.is_set():
+                break
+            log("event", "Connecting to gnu radio receiver server")
+            tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                tcp_socket.connect(server_address)
+                log("event", "Connected to gnu radio signal server")
+                buffer: bytes = b""
+                while True:
+                    if stop_event and stop_event.is_set():
+                        break
+                    try:
+                        chunk = tcp_socket.recv(1024)
+                    except socket.error as e:
+                        log(
+                            "event", f"Error connecting to gnu radio signal server: {e}"
+                        )
+                        break
+                    if not chunk:
+                        log("event", "Connection closed, reconnecting...")
+                        break
+                    buffer += chunk
+                    if len(buffer) >= 400:
+                        with lock:
+                            parsed = frameparser.payload_parse(buffer)
+                            _update_dataclass_inplace(robomaster_signal_info, parsed)
+                            if parsed is not None:
+                                log_data("parsed", "signal_info", parsed)
+                                if shared_state is not None:
+                                    shared_state["signal_payload"] = parsed
+                        if robomaster_signal_info == _robomaster_signal_info:
+                            log("event", "Parsed signal data failed")
+                        else:
+                            log_data(
+                                "parsed", "signal_info_state", robomaster_signal_info
+                            )
+                        buffer = b""
+            except socket.error as e:
+                log("event", f"Error connecting to gnu radio signal server: {e}")
+            finally:
+                tcp_socket.close()
+            if stop_event and stop_event.is_set():
+                break
+            time.sleep(0.2)
+    finally:
+        log_thread_stop("event", thread_name)
 
 
 def tcp_gnuradio_noise_key_receiver(
@@ -218,53 +278,61 @@ def tcp_datacenter_transmitter(
                 while True:
                     with lock:
                         data: bytes = (
-                            0x0A06.to_bytes(2, byteorder="big")
-                            + noise_key.sdr_behavior.to_bytes(1, byteorder="big")
-                            + noise_key.sdr_key_1.to_bytes(1, byteorder="big")
-                            + noise_key.sdr_key_2.to_bytes(1, byteorder="big")
-                            + noise_key.sdr_key_3.to_bytes(1, byteorder="big")
-                            + noise_key.sdr_key_4.to_bytes(1, byteorder="big")
-                            + noise_key.sdr_key_5.to_bytes(1, byteorder="big")
-                            + noise_key.sdr_key_6.to_bytes(1, byteorder="big")
-                            + 0x0A07.to_bytes(2, byteorder="big")
-                            + signal_info.hero_position[0].to_bytes(2, byteorder="big")
-                            + signal_info.hero_position[1].to_bytes(2, byteorder="big")
+                            0x0A06.to_bytes(2, byteorder="little")
+                            + noise_key.sdr_behavior.to_bytes(1, byteorder="little")
+                            + noise_key.sdr_key_1.to_bytes(1, byteorder="little")
+                            + noise_key.sdr_key_2.to_bytes(1, byteorder="little")
+                            + noise_key.sdr_key_3.to_bytes(1, byteorder="little")
+                            + noise_key.sdr_key_4.to_bytes(1, byteorder="little")
+                            + noise_key.sdr_key_5.to_bytes(1, byteorder="little")
+                            + noise_key.sdr_key_6.to_bytes(1, byteorder="little")
+                            + 0x0A07.to_bytes(2, byteorder="little")
+                            + signal_info.hero_position[0].to_bytes(
+                                2, byteorder="little"
+                            )
+                            + signal_info.hero_position[1].to_bytes(
+                                2, byteorder="little"
+                            )
                             + signal_info.engineer_position[0].to_bytes(
-                                2, byteorder="big"
+                                2, byteorder="little"
                             )
                             + signal_info.engineer_position[1].to_bytes(
-                                2, byteorder="big"
+                                2, byteorder="little"
                             )
                             + signal_info.infentry_position_1[0].to_bytes(
-                                2, byteorder="big"
+                                2, byteorder="little"
                             )
                             + signal_info.infentry_position_1[1].to_bytes(
-                                2, byteorder="big"
+                                2, byteorder="little"
                             )
                             + signal_info.infentry_position_2[0].to_bytes(
-                                2, byteorder="big"
+                                2, byteorder="little"
                             )
                             + signal_info.infentry_position_2[1].to_bytes(
-                                2, byteorder="big"
+                                2, byteorder="little"
                             )
-                            + signal_info.drone_position[0].to_bytes(2, byteorder="big")
-                            + signal_info.drone_position[1].to_bytes(2, byteorder="big")
+                            + signal_info.drone_position[0].to_bytes(
+                                2, byteorder="little"
+                            )
+                            + signal_info.drone_position[1].to_bytes(
+                                2, byteorder="little"
+                            )
                             + signal_info.sentinel_position[0].to_bytes(
-                                2, byteorder="big"
+                                2, byteorder="little"
                             )
                             + signal_info.sentinel_position[1].to_bytes(
-                                2, byteorder="big"
+                                2, byteorder="little"
                             )
-                            + signal_info.hero_blood.to_bytes(1, "big")
-                            + signal_info.engineer_blood.to_bytes(1, "big")
-                            + signal_info.infentry_blood_1.to_bytes(1, "big")
-                            + signal_info.infentry_blood_2.to_bytes(1, "big")
-                            + signal_info.sentinel_blood.to_bytes(1, "big")
-                            + signal_info.hero_gain[2].to_bytes(1, "big")
-                            + signal_info.engineer_gain[2].to_bytes(1, "big")
-                            + signal_info.infentry_gain_1[2].to_bytes(1, "big")
-                            + signal_info.infentry_gain_2[2].to_bytes(1, "big")
-                            + signal_info.sentinel_gain[2].to_bytes(1, "big")
+                            + signal_info.hero_blood.to_bytes(1, "little")
+                            + signal_info.engineer_blood.to_bytes(1, "little")
+                            + signal_info.infentry_blood_1.to_bytes(1, "little")
+                            + signal_info.infentry_blood_2.to_bytes(1, "little")
+                            + signal_info.sentinel_blood.to_bytes(1, "little")
+                            + signal_info.hero_gain[2].to_bytes(1, "little")
+                            + signal_info.engineer_gain[2].to_bytes(1, "little")
+                            + signal_info.infentry_gain_1[2].to_bytes(1, "little")
+                            + signal_info.infentry_gain_2[2].to_bytes(1, "little")
+                            + signal_info.sentinel_gain[2].to_bytes(1, "little")
                         )
                     log_data("parsed", "noise_key_state", noise_key)
                     log_data("parsed", "signal_info_state", signal_info)
