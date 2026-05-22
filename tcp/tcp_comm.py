@@ -278,7 +278,7 @@ def tcp_datacenter_transmitter(
                 while True:
                     with lock:
                         data: bytes = (
-                            0x0A06.to_bytes(2, byteorder="little")
+                            0x0A06.to_bytes(2, byteorder="big")
                             + noise_key.sdr_behavior.to_bytes(1, byteorder="little")
                             + noise_key.sdr_key_1.to_bytes(1, byteorder="little")
                             + noise_key.sdr_key_2.to_bytes(1, byteorder="little")
@@ -286,7 +286,7 @@ def tcp_datacenter_transmitter(
                             + noise_key.sdr_key_4.to_bytes(1, byteorder="little")
                             + noise_key.sdr_key_5.to_bytes(1, byteorder="little")
                             + noise_key.sdr_key_6.to_bytes(1, byteorder="little")
-                            + 0x0A07.to_bytes(2, byteorder="little")
+                            + 0x0A07.to_bytes(2, byteorder="big")
                             + signal_info.hero_position[0].to_bytes(
                                 2, byteorder="little"
                             )
