@@ -4,3 +4,4 @@ sd/*
 **/__pycache__/*
 radar-sdr/*
 .vscode/
+logs/*.log
