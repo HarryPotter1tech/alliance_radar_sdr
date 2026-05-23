@@ -309,7 +309,7 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
                 10000,
                 window.WIN_HAMMING,
                 6.76))
-        self.iio_pluto_source_1 = iio.fmcomms2_source_fc32('192.168.1.10' if '192.168.1.10' else iio.get_pluto_uri(), [True, True], 32768)
+        self.iio_pluto_source_1 = iio.fmcomms2_source_fc32('192.168.1.15' if '192.168.1.15' else iio.get_pluto_uri(), [True, True], 32768)
         self.iio_pluto_source_1.set_len_tag_key('packet_len')
         self.iio_pluto_source_1.set_frequency(signal_frequency)
         self.iio_pluto_source_1.set_samplerate(sample_rate)
