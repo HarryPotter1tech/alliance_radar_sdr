@@ -3,14 +3,9 @@ import socket
 import threading
 import time
 from control.gnuradio_control import GnuradioController
-from parser.datacenter_package_parser import RadarInfo
 from parser.gnuradio_frame_parser import RoboMaster_Noise_Key, RoboMaster_Signal_Info
 from parser.noise_window_tracker import NoiseKeyWindowTracker
-from tcp.tcp_comm import (
-    tcp_datacenter_receiver,
-    tcp_datacenter_transmitter,
-    tcp_gnuradio_noise_key_receiver,
-)
+from tcp.tcp_comm import tcp_gnuradio_noise_key_receiver
 
 
 GFSK_SIGNAL_FREQUENCY = 433200000
@@ -47,7 +42,6 @@ def main() -> None:
     enemy_side = _parse_args()
     signal_info: RoboMaster_Signal_Info = RoboMaster_Signal_Info()
     noise_key: RoboMaster_Noise_Key = RoboMaster_Noise_Key()
-    radar_info: RadarInfo = RadarInfo()
 
     shared_state = {
         "noise_grade": "noise_1",
@@ -65,7 +59,6 @@ def main() -> None:
     gnuradio_controller = GnuradioController(shared_state, lock)
     gnuradio_controller.start()
 
-    # Only wait for noise key server in noise-only mode
     _wait_for_port("127.0.0.1", 2500, 1.0)
 
     noise_key_thread = threading.Thread(
@@ -79,23 +72,8 @@ def main() -> None:
         ),
         daemon=True,
     )
-    transmitter_thread = threading.Thread(
-        target=tcp_datacenter_transmitter,
-        args=(signal_info, noise_key, lock),
-        daemon=True,
-    )
-    receiver_thread = threading.Thread(
-        target=tcp_datacenter_receiver,
-        args=(radar_info, lock, shared_state),
-        daemon=True,
-    )
     noise_key_thread.start()
-    transmitter_thread.start()
-    receiver_thread.start()
-
     noise_key_thread.join()
-    transmitter_thread.join()
-    receiver_thread.join()
 
 
 if __name__ == "__main__":
