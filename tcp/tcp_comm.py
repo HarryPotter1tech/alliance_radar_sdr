@@ -2,8 +2,6 @@ import socket
 import threading
 import time
 from parser.gnuradio_frame_parser import GnuRadioFrameParser, RoboMaster_Noise_Key
-from parser.noise_window_tracker import NoiseKeyWindowTracker
-
 
 from logs.event_logger import log, log_data, log_thread_start, log_thread_stop
 
@@ -19,8 +17,6 @@ def tcp_gnuradio_noise_key_receiver(
     robomaster_noise_key: RoboMaster_Noise_Key,
     lock: threading.Lock,
     stop_event: threading.Event | None = None,
-    tracker: NoiseKeyWindowTracker | None = None,
-    shared_state: dict | None = None,
 ):
     server_address = ("127.0.0.1", 2500)
 
@@ -56,38 +52,9 @@ def tcp_gnuradio_noise_key_receiver(
                     if len(buffer) >= 200:
                         with lock:
                             parsed = frameparser.payload_parse(buffer)
-                            _update_dataclass_inplace(robomaster_noise_key, parsed)
                             if parsed is not None:
+                                _update_dataclass_inplace(robomaster_noise_key, parsed)
                                 log_data("parsed", "noise_key", parsed)
-                            if tracker:
-                                key_tuple = (
-                                    robomaster_noise_key.sdr_key_1,
-                                    robomaster_noise_key.sdr_key_2,
-                                    robomaster_noise_key.sdr_key_3,
-                                    robomaster_noise_key.sdr_key_4,
-                                    robomaster_noise_key.sdr_key_5,
-                                    robomaster_noise_key.sdr_key_6,
-                                )
-                                tracked = tracker.track(key_tuple)
-                                if tracked.real_key is not None:
-                                    robomaster_noise_key.sdr_behavior = 2
-                                    (
-                                        robomaster_noise_key.sdr_key_1,
-                                        robomaster_noise_key.sdr_key_2,
-                                        robomaster_noise_key.sdr_key_3,
-                                        robomaster_noise_key.sdr_key_4,
-                                        robomaster_noise_key.sdr_key_5,
-                                        robomaster_noise_key.sdr_key_6,
-                                    ) = tracked.real_key
-                                    if shared_state is not None:
-                                        if tracked.updated:
-                                            shared_state["real_key"] = tracked.real_key
-                                            shared_state["real_key_history"] = (
-                                                tracker.real_key_history
-                                            )
-                                            log_data(
-                                                "parsed", "real_key", tracked.real_key
-                                            )
                         if robomaster_noise_key == _robomaster_noise_key:
                             log("event", "Parsed noise key data failed")
                         buffer = b""

@@ -4,7 +4,6 @@ import threading
 import time
 from control.gnuradio_control import GnuradioController
 from parser.gnuradio_frame_parser import RoboMaster_Noise_Key, RoboMaster_Signal_Info
-from parser.noise_window_tracker import NoiseKeyWindowTracker
 from tcp.tcp_comm import tcp_gnuradio_noise_key_receiver
 
 
@@ -48,8 +47,6 @@ def main() -> None:
         "signal_frequency": ENEMY_SIDE_SIGNAL_FREQUENCY[enemy_side],
         "enemy_side": enemy_side,
         "rank": 1,
-        "real_key": None,
-        "real_key_history": [],
         "signal_payload": None,
     }
     lock = threading.Lock()
@@ -63,13 +60,7 @@ def main() -> None:
 
     noise_key_thread = threading.Thread(
         target=tcp_gnuradio_noise_key_receiver,
-        args=(
-            noise_key,
-            lock,
-            noise_stop,
-            NoiseKeyWindowTracker(window_size=20),
-            shared_state,
-        ),
+        args=(noise_key, lock, noise_stop),
         daemon=True,
     )
     noise_key_thread.start()
