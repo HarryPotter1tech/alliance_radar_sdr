@@ -30,7 +30,19 @@ class RoboMaster_Signal_Info:
     cmd_id_4: int = 0x0A04
     remaining_gold: int = 0
     total_gold: int = 0
-    occupation_status: bytes = b""
+    supply_zone_status: int = 0
+    central_highland_status: int = 0
+    trapezoid_highland_status: int = 0
+    fortress_gain_status: int = 0
+    outpost_gain_status: int = 0
+    base_gain_status: int = 0
+    tunnel_1_status: int = 0
+    tunnel_2_status: int = 0
+    tunnel_3_status: int = 0
+    tunnel_4_status: int = 0
+    highland_upper_status: int = 0
+    ramp_rear_status: int = 0
+    road_upper_status: int = 0
     cmd_id_5: int = 0x0A05
     hero_gain: list[int] = field(default_factory=lambda: [0, 0, 0, 0, 0])
     engineer_gain: list[int] = field(default_factory=lambda: [0, 0, 0, 0, 0])
@@ -160,7 +172,22 @@ class GnuRadioFrameParser:
                     info.total_gold = int.from_bytes(
                         self.message_package[i + 4 : i + 6], byteorder="big"
                     )
-                    info.occupation_status = self.message_package[i + 6 : i + 10]
+                    raw = int.from_bytes(
+                        self.message_package[i + 6 : i + 10], byteorder="little"
+                    )
+                    info.supply_zone_status = raw & 0x01
+                    info.central_highland_status = (raw >> 1) & 0x03
+                    info.trapezoid_highland_status = (raw >> 3) & 0x01
+                    info.fortress_gain_status = (raw >> 4) & 0x03
+                    info.outpost_gain_status = (raw >> 6) & 0x03
+                    info.base_gain_status = (raw >> 8) & 0x01
+                    info.tunnel_1_status = (raw >> 9) & 0x01
+                    info.tunnel_2_status = (raw >> 10) & 0x01
+                    info.tunnel_3_status = (raw >> 11) & 0x01
+                    info.tunnel_4_status = (raw >> 12) & 0x01
+                    info.highland_upper_status = (raw >> 13) & 0x01
+                    info.ramp_rear_status = (raw >> 14) & 0x01
+                    info.road_upper_status = (raw >> 15) & 0x01
 
                 elif cmd_id == info.cmd_id_5:
                     info.hero_gain[0] = int.from_bytes(
