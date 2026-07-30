@@ -1,4 +1,4 @@
-with open("launch/noisekey_package.bin", "rb") as f:
+with open("noisekey_package.bin", "rb") as f:
     loaded_package = f.read()
     print("Loaded launch Package:", loaded_package)
     print("launch Package loaded successfully.")
