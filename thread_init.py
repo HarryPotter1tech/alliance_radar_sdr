@@ -5,6 +5,9 @@ import time
 from control.gnuradio_control import GnuradioController
 from parser.gnuradio_frame_parser import RoboMaster_Noise_Key, RoboMaster_Signal_Info
 from tcp.tcp_comm import tcp_gnuradio_noise_key_receiver
+from zmq.zmq_pub import zmq_start_pub
+from zmq.zmq_sub import zmq_start_sub
+from shared_state import init_shared_state
 
 
 GFSK_SIGNAL_FREQUENCY = 433200000
@@ -42,13 +45,10 @@ def main() -> None:
     signal_info: RoboMaster_Signal_Info = RoboMaster_Signal_Info()
     noise_key: RoboMaster_Noise_Key = RoboMaster_Noise_Key()
 
-    shared_state = {
-        "noise_grade": "noise_1",
-        "signal_frequency": ENEMY_SIDE_SIGNAL_FREQUENCY[enemy_side],
-        "enemy_side": enemy_side,
-        "rank": 1,
-        "signal_payload": None,
-    }
+    shared_state = init_shared_state(
+        enemy_side,
+        ENEMY_SIDE_SIGNAL_FREQUENCY[enemy_side],
+    )
     lock = threading.Lock()
     signal_stop = threading.Event()
     noise_stop = threading.Event()
@@ -64,7 +64,24 @@ def main() -> None:
         daemon=True,
     )
     noise_key_thread.start()
+
+    zmq_pub_thread = threading.Thread(
+        target=zmq_start_pub,
+        args=(signal_info, noise_key, lock),
+        daemon=True,
+    )
+    zmq_pub_thread.start()
+
+    zmq_sub_thread = threading.Thread(
+        target=zmq_start_sub,
+        args=(shared_state, lock),
+        daemon=True,
+    )
+    zmq_sub_thread.start()
+
     noise_key_thread.join()
+    zmq_pub_thread.join()
+    zmq_sub_thread.join()
 
 
 if __name__ == "__main__":
