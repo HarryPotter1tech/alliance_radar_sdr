@@ -1,7 +1,8 @@
-mqtt==0.0.1
-packaging==26.2
+# GNU Radio (gnuradio, gr) 及其 Python 绑定由系统包提供
+# （/usr/lib/python3/dist-packages），本虚拟环境需以
+# --system-site-packages 方式创建。
+PyQt5==5.15.11
 PyQt5-Qt5==5.15.18
 PyQt5_sip==12.18.0
-pyzmq==26.4.0
-startrek==2.2.2
-tcp==2.2.2
+pyzmq==22.3.0
+numpy==1.26.4

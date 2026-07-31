@@ -5,9 +5,9 @@ import threading
 import time
 from control.gnuradio_control import GnuradioController
 from parser.gnuradio_frame_parser import RoboMaster_Noise_Key, RoboMaster_Signal_Info
-from tcp.tcp_comm import tcp_gnuradio_noise_key_receiver
-from zmq.zmq_pub import zmq_start_pub
-from zmq.zmq_sub import zmq_start_sub
+from comm.tcp.tcp_comm import tcp_gnuradio_noise_key_receiver
+from comm.zmq.zmq_pub import zmq_start_pub
+from comm.zmq.zmq_sub import zmq_start_sub
 from shared_state import init_shared_state
 
 
