@@ -1,4 +1,5 @@
 import argparse
+import signal
 import socket
 import threading
 import time
@@ -40,18 +41,34 @@ def _parse_args() -> str:
     return enemy_side
 
 
-def _run_status_window(controller: GnuradioController, exit_event: threading.Event) -> None:
-    """Show the SDR status window on the main thread and run the Qt loop."""
+def _run_status_window(controller: GnuradioController) -> None:
+    """Show the SDR status window on the main thread and run the Qt loop.
+
+    Closing the window only hides it; the receiver keeps running. The
+    process exits on KeyboardInterrupt (Ctrl+C).
+    """
     from PyQt5 import Qt
 
     from control.sdr_status_window import SdrStatusWindow
 
     qapp = Qt.QApplication([])
-    window = SdrStatusWindow(exit_event)
+    window = SdrStatusWindow()
     window.show()
     print("Status window shown")
 
+    interrupted = False
+
+    def on_sigint(signum, frame) -> None:
+        nonlocal interrupted
+        interrupted = True
+
+    signal.signal(signal.SIGINT, on_sigint)
+
     def poll_status() -> None:
+        nonlocal interrupted
+        if interrupted:
+            qapp.quit()
+            return
         while not controller.status_queue.empty():
             window.update_status(controller.status_queue.get_nowait())
 
@@ -60,6 +77,7 @@ def _run_status_window(controller: GnuradioController, exit_event: threading.Eve
     timer.start(200)
 
     qapp.exec_()
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     controller.stop()
     print("Shutdown complete")
 
@@ -105,14 +123,13 @@ def main() -> None:
 
     # All worker threads started; only now bring up the status window.
     print("All threads started")
-    exit_event = threading.Event()
     try:
-        _run_status_window(gnuradio_controller, exit_event)
+        _run_status_window(gnuradio_controller)
     except Exception as exc:
-        # Headless fallback: no display available, wait for shutdown signal.
+        # Headless fallback: no display available, wait for Ctrl+C.
         print(f"Status window unavailable ({exc!r}), running headless")
         try:
-            while not exit_event.is_set():
+            while True:
                 time.sleep(0.5)
         except KeyboardInterrupt:
             pass

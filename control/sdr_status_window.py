@@ -1,14 +1,15 @@
-import threading
-
 from PyQt5 import Qt
 
 
 class SdrStatusWindow(Qt.QWidget):
-    """Minimal startup/status window for the SDR receiver (no qtgui)."""
+    """Minimal startup/status window for the SDR receiver (no qtgui).
 
-    def __init__(self, exit_event: threading.Event | None = None):
+    Closing the window only hides it; the receiver keeps running in the
+    background. Exit via Ctrl+C.
+    """
+
+    def __init__(self):
         super().__init__()
-        self.exit_event = exit_event
         self.setWindowTitle("GFSK-RX SDR")
         self.setFixedSize(420, 180)
 
@@ -27,6 +28,6 @@ class SdrStatusWindow(Qt.QWidget):
         self.label.setText(text)
 
     def closeEvent(self, event) -> None:
-        if self.exit_event is not None:
-            self.exit_event.set()
-        event.accept()
+        event.ignore()
+        self.hide()
+        print("Status window hidden (SDR keeps running, Ctrl+C to exit)")
