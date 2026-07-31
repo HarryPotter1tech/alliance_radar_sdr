@@ -7,40 +7,28 @@
 # GNU Radio Python Flow Graph
 # Title: GFSK-Transmmit-noise
 # Author: huangziang
-# GNU Radio version: 3.10.1.1
+# GNU Radio version: 3.10.7.0
 
 from packaging.version import Version as StrictVersion
-
-if __name__ == '__main__':
-    import ctypes
-    import sys
-    if sys.platform.startswith('linux'):
-        try:
-            x11 = ctypes.cdll.LoadLibrary('libX11.so')
-            x11.XInitThreads()
-        except:
-            print("Warning: failed to XInitThreads()")
-
 from PyQt5 import Qt
-from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import qtgui
-from gnuradio.filter import firdes
-import sip
+from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import blocks
 import pmt
 from gnuradio import digital
 from gnuradio import gr
+from gnuradio.filter import firdes
 from gnuradio.fft import window
 import sys
 import signal
+from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import iio
+import sip
 
 
-
-from gnuradio import qtgui
 
 class GFSK_Transmmit_noise(gr.top_block, Qt.QWidget):
 
@@ -51,8 +39,8 @@ class GFSK_Transmmit_noise(gr.top_block, Qt.QWidget):
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
-        except:
-            pass
+        except BaseException as exc:
+            print(f"Qt GUI: Could not set Icon: {str(exc)}", file=sys.stderr)
         self.top_scroll_layout = Qt.QVBoxLayout()
         self.setLayout(self.top_scroll_layout)
         self.top_scroll = Qt.QScrollArea()
@@ -72,8 +60,8 @@ class GFSK_Transmmit_noise(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(self.settings.value("geometry").toByteArray())
             else:
                 self.restoreGeometry(self.settings.value("geometry"))
-        except:
-            pass
+        except BaseException as exc:
+            print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
 
         ##################################################
         # Variables
@@ -81,13 +69,13 @@ class GFSK_Transmmit_noise(gr.top_block, Qt.QWidget):
         self.noise_grade_chooser = noise_grade_chooser = 'noise_1'
         self.configs = configs = {
             "noise_1"
-                : {"noise_sensitivity" : 2.8323, "noise_frequency" : 432200000, "noise_bandwidth" : 940000}
+                : {"noise_sensitivity" : 2.8194, "noise_frequency" : 432200000, "noise_bandwidth" : 940000}
                 , "noise_2"
-                : {"noise_sensitivity" : 2.5809, "noise_frequency" : 432500000, "noise_bandwidth" : 860000}
+                : {"noise_sensitivity" : 2.5681, "noise_frequency" : 432500000, "noise_bandwidth" : 860000}
                 , "noise_3"
-                : {"noise_sensitivity" : 0.6646, "noise_frequency" : 432800000, "noise_bandwidth" : 250000}
+                : {"noise_sensitivity" : 0.6517, "noise_frequency" : 432800000, "noise_bandwidth" : 250000}
         }
-        self.signal_sensitivity = signal_sensitivity = 1.5756
+        self.signal_sensitivity = signal_sensitivity = 1.5628
         self.signal_frequency = signal_frequency = 433200000
         self.signal_bandwidth = signal_bandwidth = 540000
         self.selector_port = selector_port = 1
@@ -95,11 +83,12 @@ class GFSK_Transmmit_noise(gr.top_block, Qt.QWidget):
         self.noise_sensitivity = noise_sensitivity = configs[noise_grade_chooser]["noise_sensitivity"]
         self.noise_frequency = noise_frequency = configs[noise_grade_chooser]["noise_frequency"]
         self.noise_bandwidth = noise_bandwidth = configs[noise_grade_chooser]["noise_bandwidth"]
-        self.SPS = SPS = 52
+        self.SPS = SPS = 47
 
         ##################################################
         # Blocks
         ##################################################
+
         self.qtgui_time_sink_x_0_0_0_0_0_0_0_2_0 = qtgui.time_sink_f(
             2048, #size
             sample_rate*2, #samp_rate
@@ -158,7 +147,7 @@ class GFSK_Transmmit_noise(gr.top_block, Qt.QWidget):
             None # parent
         )
         self.qtgui_freq_sink_x_0.set_update_time(1)
-        self.qtgui_freq_sink_x_0.set_y_axis(-200, 200)
+        self.qtgui_freq_sink_x_0.set_y_axis((-200), 200)
         self.qtgui_freq_sink_x_0.set_y_label('db', 'dB')
         self.qtgui_freq_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
         self.qtgui_freq_sink_x_0.enable_autoscale(True)

@@ -72,43 +72,43 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
         self.noise_configs = noise_configs = {
             "noise_1": {
                 "red": {
-                    "noise_sensitivity": 2.8323,
+                    "noise_sensitivity": 2.8194,
                     "noise_frequency": 432200000,
                     "noise_bandwidth": 940000,
                 },
                 "blue": {
-                    "noise_sensitivity": 2.8323,
+                    "noise_sensitivity": 2.8194,
                     "noise_frequency": 434920000,
                     "noise_bandwidth": 940000,
                 },
             },
             "noise_2": {
                 "red": {
-                    "noise_sensitivity": 2.5809,
+                    "noise_sensitivity": 2.5681,
                     "noise_frequency": 432500000,
                     "noise_bandwidth": 860000,
                 },
                 "blue": {
-                    "noise_sensitivity": 2.5809,
+                    "noise_sensitivity": 2.5681,
                     "noise_frequency": 434620000,
                     "noise_bandwidth": 860000,
                 },
             },
             "noise_3": {
                 "red": {
-                    "noise_sensitivity": 0.6646,
+                    "noise_sensitivity": 0.6517,
                     "noise_frequency": 432800000,
                     "noise_bandwidth": 250000,
                 },
                 "blue": {
-                    "noise_sensitivity": 0.6646,
+                    "noise_sensitivity": 0.6517,
                     "noise_frequency": 434320000,
                     "noise_bandwidth": 250000,
                 },
             },
         }
         self.enemyside = enemyside = 'red'
-        self.signal_sensitivity = signal_sensitivity = 1.5756
+        self.signal_sensitivity = signal_sensitivity = 1.5628
         self.signal_frequency = signal_frequency = signal_configs[enemyside]["signal_frequency"]
         self.signal_bandwidth = signal_bandwidth = 540000
         self.sample_rate = sample_rate = 1000000
@@ -116,7 +116,7 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
         self.noise_sensitivity = noise_sensitivity = noise_configs[noise_grade_chooser][enemyside]["noise_sensitivity"]
         self.noise_frequency = noise_frequency = noise_configs[noise_grade_chooser][enemyside]["noise_frequency"]
         self.noise_bandwidth = noise_bandwidth = noise_configs[noise_grade_chooser][enemyside]["noise_bandwidth"]
-        self.SPS = SPS = 52
+        self.SPS = SPS = 47
 
         ##################################################
         # Blocks

@@ -37,7 +37,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '52'
+    value: '47'
   states:
     bus_sink: false
     bus_source: false
@@ -92,18 +92,18 @@ blocks:
   parameters:
     comment: ''
     value: "{\n    \"noise_1\": {\n        \"red\": {\n            \"noise_sensitivity\"\
-      : 2.8323,\n            \"noise_frequency\": 432200000,\n            \"noise_bandwidth\"\
+      : 2.8194,\n            \"noise_frequency\": 432200000,\n            \"noise_bandwidth\"\
       : 940000,\n        },\n        \"blue\": {\n            \"noise_sensitivity\"\
-      : 2.8323,\n            \"noise_frequency\": 434920000,\n            \"noise_bandwidth\"\
+      : 2.8194,\n            \"noise_frequency\": 434920000,\n            \"noise_bandwidth\"\
       : 940000,\n        },\n    },\n    \"noise_2\": {\n        \"red\": {\n    \
-      \        \"noise_sensitivity\": 2.5809,\n            \"noise_frequency\": 432500000,\n\
+      \        \"noise_sensitivity\": 2.5681,\n            \"noise_frequency\": 432500000,\n\
       \            \"noise_bandwidth\": 860000,\n        },\n        \"blue\": {\n\
-      \            \"noise_sensitivity\": 2.5809,\n            \"noise_frequency\"\
+      \            \"noise_sensitivity\": 2.5681,\n            \"noise_frequency\"\
       : 434620000,\n            \"noise_bandwidth\": 860000,\n        },\n    },\n\
       \    \"noise_3\": {\n        \"red\": {\n            \"noise_sensitivity\":\
-      \ 0.6646,\n            \"noise_frequency\": 432800000,\n            \"noise_bandwidth\"\
+      \ 0.6517,\n            \"noise_frequency\": 432800000,\n            \"noise_bandwidth\"\
       : 250000,\n        },\n        \"blue\": {\n            \"noise_sensitivity\"\
-      : 0.6646,\n            \"noise_frequency\": 434320000,\n            \"noise_bandwidth\"\
+      : 0.6517,\n            \"noise_frequency\": 434320000,\n            \"noise_bandwidth\"\
       : 250000,\n        },\n    },\n}"
   states:
     bus_sink: false
@@ -230,7 +230,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '1.5756'
+    value: '1.5628'
   states:
     bus_sink: false
     bus_source: false
@@ -322,7 +322,7 @@ blocks:
     minoutbuf: '0'
     mu: '0.5'
     omega_relative_limit: '0.005'
-    samples_per_symbol: '52'
+    samples_per_symbol: SPS
     sensitivity: 1/noise_sensitivity
     verbose: 'False'
   states:
