@@ -40,6 +40,30 @@ def _parse_args() -> str:
     return enemy_side
 
 
+def _run_status_window(controller: GnuradioController, exit_event: threading.Event) -> None:
+    """Show the SDR status window on the main thread and run the Qt loop."""
+    from PyQt5 import Qt
+
+    from control.sdr_status_window import SdrStatusWindow
+
+    qapp = Qt.QApplication([])
+    window = SdrStatusWindow(exit_event)
+    window.show()
+    print("Status window shown")
+
+    def poll_status() -> None:
+        while not controller.status_queue.empty():
+            window.update_status(controller.status_queue.get_nowait())
+
+    timer = Qt.QTimer()
+    timer.timeout.connect(poll_status)
+    timer.start(200)
+
+    qapp.exec_()
+    controller.stop()
+    print("Shutdown complete")
+
+
 def main() -> None:
     enemy_side = _parse_args()
     signal_info: RoboMaster_Signal_Info = RoboMaster_Signal_Info()
@@ -79,9 +103,21 @@ def main() -> None:
     )
     zmq_sub_thread.start()
 
-    noise_key_thread.join()
-    zmq_pub_thread.join()
-    zmq_sub_thread.join()
+    # All worker threads started; only now bring up the status window.
+    print("All threads started")
+    exit_event = threading.Event()
+    try:
+        _run_status_window(gnuradio_controller, exit_event)
+    except Exception as exc:
+        # Headless fallback: no display available, wait for shutdown signal.
+        print(f"Status window unavailable ({exc!r}), running headless")
+        try:
+            while not exit_event.is_set():
+                time.sleep(0.5)
+        except KeyboardInterrupt:
+            pass
+        gnuradio_controller.stop()
+        print("Shutdown complete")
 
 
 if __name__ == "__main__":
