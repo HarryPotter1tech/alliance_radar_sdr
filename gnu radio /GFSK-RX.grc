@@ -1,0 +1,305 @@
+options:
+  parameters:
+    author: huangziang
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: no_gui
+    hier_block_src_path: '.:'
+    id: GFSK_RX
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: GFSK-RX
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: SPS
+  id: variable
+  parameters:
+    comment: ''
+    value: '47'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [168, 24.0]
+    rotation: 180
+    state: enabled
+- name: access_code
+  id: variable
+  parameters:
+    comment: ''
+    value: globals().get('CONFIG', {}).get('access_code', '0001011011101000110100110111011100010101000111000111000100101101')
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [592, 24.0]
+    rotation: 0
+    state: enabled
+- name: demod_sensitivity
+  id: variable
+  parameters:
+    comment: ''
+    value: globals().get('CONFIG', {}).get('sensitivity', 2.8194)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 24.0]
+    rotation: 0
+    state: enabled
+- name: lpf_cutoff
+  id: variable
+  parameters:
+    comment: ''
+    value: globals().get('CONFIG', {}).get('bandwidth', 500000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [520, 24.0]
+    rotation: 0
+    state: enabled
+- name: pi
+  id: variable
+  parameters:
+    comment: ''
+    value: '3.141592653589793'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 24.0]
+    rotation: 0
+    state: enabled
+- name: rx_frequency
+  id: variable
+  parameters:
+    comment: ''
+    value: globals().get('CONFIG', {}).get('frequency', 432200000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [312, 24.0]
+    rotation: 0
+    state: enabled
+- name: sample_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '1000000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [224, 24.0]
+    rotation: 0
+    state: enabled
+- name: sdr_uri
+  id: variable
+  parameters:
+    comment: ''
+    value: globals().get('CONFIG', {}).get('sdr_uri', '192.168.1.10')
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [688, 24.0]
+    rotation: 0
+    state: enabled
+- name: tcp_port
+  id: variable
+  parameters:
+    comment: ''
+    value: globals().get('CONFIG', {}).get('tcp_port', 2500)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [800, 24.0]
+    rotation: 0
+    state: enabled
+- name: blocks_pack_k_bits_bb_0
+  id: blocks_pack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    k: '8'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [928, 232.0]
+    rotation: 0
+    state: true
+- name: blocks_stream_to_tagged_stream_0_0
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    packet_len: '15'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1080, 224.0]
+    rotation: 0
+    state: true
+- name: digital_correlate_access_code_xx_ts_0_0
+  id: digital_correlate_access_code_xx_ts
+  parameters:
+    access_code: access_code
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tagname: access_code+header
+    threshold: '12'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [664, 212.0]
+    rotation: 0
+    state: true
+- name: digital_gfsk_demod_0_0
+  id: digital_gfsk_demod
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    freq_error: '0.0'
+    gain_mu: '0.175'
+    log: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mu: '0.5'
+    omega_relative_limit: '0.005'
+    samples_per_symbol: SPS
+    sensitivity: 1/demod_sensitivity
+    verbose: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [448, 188.0]
+    rotation: 0
+    state: true
+- name: iio_pluto_source_1
+  id: iio_pluto_source
+  parameters:
+    affinity: ''
+    alias: ''
+    bandwidth: '20000000'
+    bbdc: 'True'
+    buffer_size: '32768'
+    comment: ''
+    filter: ''
+    filter_source: '''Auto'''
+    fpass: '0'
+    frequency: rx_frequency
+    fstop: '0'
+    gain1: '''manual'''
+    len_tag_key: packet_len
+    manual_gain1: '60'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    quadrature: 'True'
+    rfdc: 'True'
+    samplerate: sample_rate
+    type: fc32
+    uri: sdr_uri
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [32, 140.0]
+    rotation: 0
+    state: true
+- name: low_pass_filter_0_0
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: lpf_cutoff
+    decim: '1'
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: sample_rate
+    type: fir_filter_ccf
+    width: '10000'
+    win: window.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [272, 176.0]
+    rotation: 0
+    state: true
+- name: network_tcp_sink_0_0
+  id: network_tcp_sink
+  parameters:
+    addr: 127.0.0.1
+    affinity: ''
+    alias: ''
+    comment: ''
+    mode: '2'
+    port: tcp_port
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1312, 224.0]
+    rotation: 0
+    state: true
+
+connections:
+- [blocks_pack_k_bits_bb_0, '0', blocks_stream_to_tagged_stream_0_0, '0']
+- [blocks_stream_to_tagged_stream_0_0, '0', network_tcp_sink_0_0, '0']
+- [digital_correlate_access_code_xx_ts_0_0, '0', blocks_pack_k_bits_bb_0, '0']
+- [digital_gfsk_demod_0_0, '0', digital_correlate_access_code_xx_ts_0_0, '0']
+- [iio_pluto_source_1, '0', low_pass_filter_0_0, '0']
+- [low_pass_filter_0_0, '0', digital_gfsk_demod_0_0, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.7.0
