@@ -28,7 +28,7 @@ options:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 4.0]
+    coordinate: [8, 8]
     rotation: 0
     state: enabled
 
@@ -42,7 +42,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 16.0]
+    coordinate: [168, 24.0]
     rotation: 180
     state: enabled
 - name: enemyside
@@ -72,7 +72,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [144, 504.0]
+    coordinate: [32, 472.0]
     rotation: 0
     state: true
 - name: noise_bandwidth
@@ -84,7 +84,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [864, 16.0]
+    coordinate: [872, 24.0]
     rotation: 0
     state: enabled
 - name: noise_configs
@@ -109,7 +109,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [976, 16.0]
+    coordinate: [984, 24.0]
     rotation: 0
     state: enabled
 - name: noise_frequency
@@ -121,7 +121,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 16.0]
+    coordinate: [424, 24.0]
     rotation: 0
     state: enabled
 - name: noise_grade_chooser
@@ -151,7 +151,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 488.0]
+    coordinate: [160, 440.0]
     rotation: 0
     state: true
 - name: noise_sensitivity
@@ -163,7 +163,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [640, 16.0]
+    coordinate: [648, 24.0]
     rotation: 0
     state: enabled
 - name: pi
@@ -175,7 +175,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1264, 16.0]
+    coordinate: [1272, 24.0]
     rotation: 0
     state: enabled
 - name: sample_rate
@@ -187,7 +187,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [216, 16.0]
+    coordinate: [224, 24.0]
     rotation: 0
     state: enabled
 - name: signal_bandwidth
@@ -199,7 +199,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 16.0]
+    coordinate: [760, 24.0]
     rotation: 0
     state: enabled
 - name: signal_configs
@@ -211,7 +211,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1120, 16.0]
+    coordinate: [1128, 24.0]
     rotation: 0
     state: enabled
 - name: signal_frequency
@@ -223,7 +223,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 16.0]
+    coordinate: [312, 24.0]
     rotation: 0
     state: enabled
 - name: signal_sensitivity
@@ -235,7 +235,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [528, 16.0]
+    coordinate: [536, 24.0]
     rotation: 0
     state: enabled
 - name: blocks_char_to_float_0_0
@@ -252,25 +252,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [976, 184.0]
-    rotation: 0
-    state: true
-- name: blocks_file_sink_0
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: /home/pinkpanda/linux-RADAR/RADAR-2026/RADAR-SDR/receive.bin
-    type: byte
-    unbuffered: 'False'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1584, 180.0]
+    coordinate: [744, 280.0]
     rotation: 0
     state: true
 - name: blocks_pack_k_bits_bb_0
@@ -286,7 +268,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 328.0]
+    coordinate: [984, 408.0]
     rotation: 0
     state: true
 - name: blocks_stream_to_tagged_stream_0
@@ -305,7 +287,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 320.0]
+    coordinate: [1144, 400.0]
     rotation: 0
     state: true
 - name: digital_correlate_access_code_xx_ts_0
@@ -324,7 +306,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 308.0]
+    coordinate: [712, 388.0]
     rotation: 0
     state: true
 - name: digital_gfsk_demod_0
@@ -347,7 +329,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 252.0]
+    coordinate: [480, 236.0]
     rotation: 0
     state: true
 - name: iio_pluto_source_1
@@ -378,7 +360,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [152, 228.0]
+    coordinate: [32, 140.0]
     rotation: 0
     state: true
 - name: low_pass_filter_0
@@ -402,7 +384,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 256.0]
+    coordinate: [272, 176.0]
     rotation: 0
     state: true
 - name: network_tcp_sink_0
@@ -420,7 +402,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1616, 320.0]
+    coordinate: [1368, 400.0]
     rotation: 0
     state: true
 - name: qtgui_freq_sink_x_0_0
@@ -501,7 +483,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 412.0]
+    coordinate: [480, 396.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_0_0_0_0_0_0_1
@@ -598,7 +580,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1184, 172.0]
+    coordinate: [912, 252.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_0_0_0_0_0_0_2
@@ -695,14 +677,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [696, 124.0]
+    coordinate: [488, 108.0]
     rotation: 0
     state: enabled
 
 connections:
 - [blocks_char_to_float_0_0, '0', qtgui_time_sink_x_0_0_0_0_0_0_0_1, '0']
 - [blocks_pack_k_bits_bb_0, '0', blocks_stream_to_tagged_stream_0, '0']
-- [blocks_stream_to_tagged_stream_0, '0', blocks_file_sink_0, '0']
 - [blocks_stream_to_tagged_stream_0, '0', network_tcp_sink_0, '0']
 - [digital_correlate_access_code_xx_ts_0, '0', blocks_pack_k_bits_bb_0, '0']
 - [digital_gfsk_demod_0, '0', blocks_char_to_float_0_0, '0']
@@ -714,3 +695,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.7.0

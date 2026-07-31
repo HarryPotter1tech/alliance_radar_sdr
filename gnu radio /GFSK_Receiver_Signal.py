@@ -7,41 +7,29 @@
 # GNU Radio Python Flow Graph
 # Title: GFSK-Receiver-Signal
 # Author: huangziang
-# GNU Radio version: 3.10.1.1
+# GNU Radio version: 3.10.7.0
 
 from packaging.version import Version as StrictVersion
-
-if __name__ == '__main__':
-    import ctypes
-    import sys
-    if sys.platform.startswith('linux'):
-        try:
-            x11 = ctypes.cdll.LoadLibrary('libX11.so')
-            x11.XInitThreads()
-        except:
-            print("Warning: failed to XInitThreads()")
-
 from PyQt5 import Qt
-from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import qtgui
-from gnuradio.filter import firdes
-import sip
+from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import blocks
 from gnuradio import digital
 from gnuradio import filter
+from gnuradio.filter import firdes
 from gnuradio import gr
 from gnuradio.fft import window
 import sys
 import signal
+from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import iio
 from gnuradio import network
+import sip
 
 
-
-from gnuradio import qtgui
 
 class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
 
@@ -52,8 +40,8 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
-        except:
-            pass
+        except BaseException as exc:
+            print(f"Qt GUI: Could not set Icon: {str(exc)}", file=sys.stderr)
         self.top_scroll_layout = Qt.QVBoxLayout()
         self.setLayout(self.top_scroll_layout)
         self.top_scroll = Qt.QScrollArea()
@@ -73,8 +61,8 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(self.settings.value("geometry").toByteArray())
             else:
                 self.restoreGeometry(self.settings.value("geometry"))
-        except:
-            pass
+        except BaseException as exc:
+            print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
 
         ##################################################
         # Variables
@@ -133,6 +121,7 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
+
         self.qtgui_time_sink_x_0_0_0_0_0_0_0_2 = qtgui.time_sink_c(
             2048, #size
             sample_rate*2, #samp_rate
@@ -236,13 +225,13 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
             8192, #size
             window.WIN_HAMMING, #wintype
             signal_frequency, #fc
-            sample_rate*2, #bw
+            (sample_rate*2), #bw
             "GFSK-signal滤波后频率图", #name
             1,
             None # parent
         )
         self.qtgui_freq_sink_x_0_0.set_update_time(1)
-        self.qtgui_freq_sink_x_0_0.set_y_axis(-70, 0)
+        self.qtgui_freq_sink_x_0_0.set_y_axis((-70), 0)
         self.qtgui_freq_sink_x_0_0.set_y_label('db', 'dB')
         self.qtgui_freq_sink_x_0_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
         self.qtgui_freq_sink_x_0_0.enable_autoscale(True)
@@ -346,7 +335,7 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
         self.top_layout.addWidget(self._enemyside_group_box)
         self.digital_gfsk_demod_0 = digital.gfsk_demod(
             samples_per_symbol=SPS,
-            sensitivity=1/signal_sensitivity,
+            sensitivity=(1/signal_sensitivity),
             gain_mu=0.175,
             mu=0.5,
             omega_relative_limit=0.05,
@@ -357,8 +346,6 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
           12, 'access_code+header')
         self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 15, "packet_len")
         self.blocks_pack_k_bits_bb_0 = blocks.pack_k_bits_bb(8)
-        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, '/home/pinkpanda/linux-RADAR/RADAR-2026/RADAR-SDR/receive.bin', False)
-        self.blocks_file_sink_0.set_unbuffered(False)
         self.blocks_char_to_float_0_0 = blocks.char_to_float(1, 1)
 
 
@@ -367,7 +354,6 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
         ##################################################
         self.connect((self.blocks_char_to_float_0_0, 0), (self.qtgui_time_sink_x_0_0_0_0_0_0_0_1, 0))
         self.connect((self.blocks_pack_k_bits_bb_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
-        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.network_tcp_sink_0, 0))
         self.connect((self.digital_correlate_access_code_xx_ts_0, 0), (self.blocks_pack_k_bits_bb_0, 0))
         self.connect((self.digital_gfsk_demod_0, 0), (self.blocks_char_to_float_0_0, 0))
@@ -435,7 +421,7 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
     def set_signal_frequency(self, signal_frequency):
         self.signal_frequency = signal_frequency
         self.iio_pluto_source_1.set_frequency(self.signal_frequency)
-        self.qtgui_freq_sink_x_0_0.set_frequency_range(self.signal_frequency, self.sample_rate*2)
+        self.qtgui_freq_sink_x_0_0.set_frequency_range(self.signal_frequency, (self.sample_rate*2))
 
     def get_signal_bandwidth(self):
         return self.signal_bandwidth
@@ -450,7 +436,7 @@ class GFSK_Receiver_Signal(gr.top_block, Qt.QWidget):
         self.sample_rate = sample_rate
         self.iio_pluto_source_1.set_samplerate(self.sample_rate)
         self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.sample_rate, 260000, 10000, window.WIN_HAMMING, 6.76))
-        self.qtgui_freq_sink_x_0_0.set_frequency_range(self.signal_frequency, self.sample_rate*2)
+        self.qtgui_freq_sink_x_0_0.set_frequency_range(self.signal_frequency, (self.sample_rate*2))
         self.qtgui_time_sink_x_0_0_0_0_0_0_0_1.set_samp_rate(self.sample_rate / self.SPS)
         self.qtgui_time_sink_x_0_0_0_0_0_0_0_2.set_samp_rate(self.sample_rate*2)
 
