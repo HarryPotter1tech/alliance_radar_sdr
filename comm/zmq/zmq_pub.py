@@ -123,6 +123,7 @@ def zmq_start_pub(
     signal_info: RoboMaster_Signal_Info,
     noise_key: RoboMaster_Noise_Key,
     lock: threading.Lock,
+    shared_state: dict,
     stop_event: threading.Event | None = None,
 ) -> None:
     thread_name = threading.current_thread().name
@@ -138,6 +139,14 @@ def zmq_start_pub(
             if stop_event and stop_event.is_set():
                 break
             with lock:
+                game_progress = shared_state.get("game_progress", 0)
+                if game_progress != 4:
+                    log(
+                        "zmq_pub",
+                        f"skip publish: game_progress={game_progress}",
+                    )
+                    time.sleep(PUB_INTERVAL)
+                    continue
                 msg = {
                     "cmd_id": ZMQ_SUB_SDR,
                     "position": _build_position(signal_info),
@@ -148,6 +157,7 @@ def zmq_start_pub(
                     "key": _build_key(noise_key),
                 }
             pub_socket.send_string(json.dumps(msg))
+            log_data("zmq_pub", "publish", msg)
             time.sleep(PUB_INTERVAL)
     finally:
         log_thread_stop("event", thread_name)

@@ -109,7 +109,7 @@ def main() -> None:
 
     zmq_pub_thread = threading.Thread(
         target=zmq_start_pub,
-        args=(signal_info, noise_key, lock),
+        args=(signal_info, noise_key, lock, shared_state),
         daemon=True,
     )
     zmq_pub_thread.start()

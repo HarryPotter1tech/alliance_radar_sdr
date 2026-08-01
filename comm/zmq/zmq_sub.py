@@ -39,8 +39,22 @@ def zmq_start_sub(
 
             with lock:
                 if cmd_id == ZMQ_PUB_GAME_STATE:
-                    shared_state["game_type"] = msg.get("game_type", 0)
-                    shared_state["game_progress"] = msg.get("game_progress", 0)
+                    game_type = msg.get("game_type", 0)
+                    game_progress = msg.get("game_progress", 0)
+                    if (
+                        game_type != shared_state.get("game_type")
+                        or game_progress != shared_state.get("game_progress")
+                    ):
+                        log_data(
+                            "event",
+                            "game_state",
+                            {
+                                "game_type": game_type,
+                                "game_progress": game_progress,
+                            },
+                        )
+                    shared_state["game_type"] = game_type
+                    shared_state["game_progress"] = game_progress
                     shared_state["stage_remain_time"] = msg.get(
                         "stage_remain_time", 0
                     )
