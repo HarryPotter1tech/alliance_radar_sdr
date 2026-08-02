@@ -26,6 +26,7 @@ class GnuradioController:
         self._retry_attempt = 0
         self._retry_after = 0.0
         self.status_queue: "queue.Queue[str]" = queue.Queue()
+        self._current_config: dict | None = None
         self.thread = threading.Thread(target=self._run, daemon=True)
 
     def start(self) -> None:
@@ -36,6 +37,15 @@ class GnuradioController:
         self._stopping.set()
         if self.thread.is_alive():
             self.thread.join(timeout)
+
+    def current_config(self) -> dict | None:
+        """Return the receiver config currently applied or being attempted.
+
+        Safe to call from any thread; returns a copy.
+        """
+        if self._current_config is not None:
+            return dict(self._current_config)
+        return self._expected_config()
 
     def _read_state(self) -> tuple[str, str]:
         with self.lock:
@@ -74,7 +84,8 @@ class GnuradioController:
     def _close_flowgraph(self, tb) -> None:
         tb.stop()
         tb.wait()
-        tb.close()
+        if hasattr(tb, "close"):
+            tb.close()
         log("gnuradiocontrol", "stopped old flowgraph")
 
     def _report_status(self, text: str) -> None:
@@ -98,6 +109,7 @@ class GnuradioController:
             tb.start()
             self._retry_attempt = 0
             self._retry_after = 0.0
+            self._current_config = config
             log_data("gnuradiocontrol", label, config)
             self._report_status(self._format_running_status(config))
             return tb
@@ -124,6 +136,7 @@ class GnuradioController:
                     "config_changed",
                     {"from": current_config, "to": expected},
                 )
+                self._current_config = expected
                 try:
                     self._close_flowgraph(tb)
                 except Exception as exc:
@@ -152,6 +165,7 @@ class GnuradioController:
 
             # Initial start with retry until success or stop requested.
             config = self._expected_config()
+            self._current_config = config
             tb = None
             while tb is None and not self._stopping.is_set():
                 tb = self._attempt_start(module, config, "flowgraph_started")

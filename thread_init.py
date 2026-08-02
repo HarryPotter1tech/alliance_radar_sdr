@@ -44,8 +44,7 @@ def _parse_args() -> str:
 def _run_status_window(controller: GnuradioController) -> None:
     """Show the SDR status window on the main thread and run the Qt loop.
 
-    Closing the window only hides it; the receiver keeps running. The
-    process exits on KeyboardInterrupt (Ctrl+C).
+    Closing the window (or Ctrl+C / SIGTERM) stops the receiver and exits.
     """
     from PyQt5 import Qt
 
@@ -58,11 +57,12 @@ def _run_status_window(controller: GnuradioController) -> None:
 
     interrupted = False
 
-    def on_sigint(signum, frame) -> None:
+    def on_signal(signum, frame) -> None:
         nonlocal interrupted
         interrupted = True
 
-    signal.signal(signal.SIGINT, on_sigint)
+    signal.signal(signal.SIGINT, on_signal)
+    signal.signal(signal.SIGTERM, on_signal)
 
     def poll_status() -> None:
         nonlocal interrupted
@@ -71,6 +71,7 @@ def _run_status_window(controller: GnuradioController) -> None:
             return
         while not controller.status_queue.empty():
             window.update_status(controller.status_queue.get_nowait())
+        window.update_config(controller.current_config())
 
     timer = Qt.QTimer()
     timer.timeout.connect(poll_status)
@@ -78,6 +79,7 @@ def _run_status_window(controller: GnuradioController) -> None:
 
     qapp.exec_()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+    signal.signal(signal.SIGTERM, signal.SIG_DFL)
     controller.stop()
     print("Shutdown complete")
 

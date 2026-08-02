@@ -118,6 +118,11 @@ def main() -> int:
 
     # 1. initial noise_1
     check("noise_1 (rank=1)", 432200000, timeout=8.0)
+    cfg = controller.current_config()
+    cfg_ok = cfg is not None and cfg["mode"] == "noise" and cfg["frequency"] == 432200000
+    print(f"{'PASS' if cfg_ok else 'FAIL'} | current_config exposes noise_1 params "
+          f"(mode={cfg and cfg.get('mode')}, freq={cfg and cfg.get('frequency')})")
+    ok = ok and cfg_ok
 
     # 2. retry scenario: fail the next device open, then rank=2 must succeed after backoff
     FakePluto.fail_next = True
@@ -134,6 +139,11 @@ def main() -> int:
         shared_state["rank"] = 3
         shared_state["noise_grade"] = rank_to_noise_grade(3)
     check("signal (rank=3)", 433200000, timeout=8.0)
+    cfg = controller.current_config()
+    cfg_ok = cfg is not None and cfg["mode"] == "signal" and cfg["frequency"] == 433200000
+    print(f"{'PASS' if cfg_ok else 'FAIL'} | current_config follows signal conversion "
+          f"(mode={cfg and cfg.get('mode')}, freq={cfg and cfg.get('frequency')})")
+    ok = ok and cfg_ok
 
     # 4. graceful shutdown
     controller.stop()
