@@ -4,7 +4,8 @@ from PyQt5 import Qt
 class SdrStatusWindow(Qt.QWidget):
     """Status window for the SDR receiver: shows current parameter config.
 
-    Closing the window stops the SDR and exits the process.
+    Closing the window only hides it; the receiver keeps running in the
+    background. Use the "退出 SDR" button, Ctrl+C or SIGTERM to stop.
     """
 
     # key -> (中文 label, 格式化函数)
@@ -21,44 +22,84 @@ class SdrStatusWindow(Qt.QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("GFSK-RX SDR")
-        self.setFixedSize(720, 460)
 
         self.label = Qt.QLabel("SDR 启动中…")
         self.label.setAlignment(Qt.Qt.AlignCenter)
         font = self.label.font()
-        font.setPointSize(16)
+        font.setPointSize(14)
         font.setBold(True)
         self.label.setFont(font)
         self.label.setWordWrap(True)
 
         form = Qt.QFormLayout()
-        form.setVerticalSpacing(10)
+        form.setVerticalSpacing(8)
+        self.form = form
         self.value_labels: dict[str, Qt.QLabel] = {}
-        for key, label, _fmt in self._CONFIG_ROWS:
+        for key, label_text, _fmt in self._CONFIG_ROWS:
             value = Qt.QLabel("—")
             value.setTextInteractionFlags(Qt.Qt.TextSelectableByMouse)
             value_font = value.font()
-            value_font.setPointSize(14)
+            value_font.setPointSize(13)
             value.setFont(value_font)
-            name = Qt.QLabel(label)
-            name_font = name.font()
-            name_font.setPointSize(14)
-            name.setFont(name_font)
             self.value_labels[key] = value
-            form.addRow(name, value)
+            form.addRow(self._make_name_label(label_text), value)
 
-        hint = Qt.QLabel("关闭窗口即退出 SDR")
+        self.exit_button = Qt.QPushButton("退出 SDR")
+        self.exit_button.setFixedWidth(160)
+        self.exit_button.clicked.connect(self._request_exit)
+
+        hint = Qt.QLabel("关闭窗口仅隐藏, SDR 后台继续运行")
         hint.setAlignment(Qt.Qt.AlignCenter)
-        hint.setStyleSheet("color: gray; font-size: 14px;")
+        hint.setStyleSheet("color: gray; font-size: 12px;")
+        self.hint = hint
 
         layout = Qt.QVBoxLayout(self)
-        layout.setContentsMargins(24, 24, 24, 16)
-        layout.setSpacing(14)
+        layout.setContentsMargins(20, 16, 20, 12)
+        layout.setSpacing(10)
         layout.addWidget(self.label)
         layout.addLayout(form)
+        layout.addSpacing(4)
+        layout.addWidget(self.exit_button, 0, Qt.Qt.AlignHCenter)
         layout.addWidget(hint)
 
         self.update_config(None)
+        self._resize_to_fit()
+
+    def _resize_to_fit(self, width: int = 640) -> None:
+        """Size the window to its content using real font metrics.
+
+        The environment may run at 2x DPI scaling, so fixed pixel sizes
+        are unreliable; compute heights from actual font metrics instead.
+        """
+        layout = self.layout()
+        margins = layout.contentsMargins()
+        inner_w = width - margins.left() - margins.right()
+        status_two_lines = 2 * Qt.QFontMetrics(self.label.font()).lineSpacing() + 8
+        status_h = max(self.label.heightForWidth(inner_w), status_two_lines)
+        height = (
+            margins.top()
+            + status_h
+            + layout.spacing()
+            + self.form.sizeHint().height()
+            + layout.spacing()
+            + 4
+            + self.exit_button.sizeHint().height()
+            + layout.spacing()
+            + self.hint.sizeHint().height()
+            + margins.bottom()
+        )
+        self.setFixedSize(width, int(height))
+
+    def _make_name_label(self, text: str) -> Qt.QLabel:
+        name = Qt.QLabel(text)
+        font = name.font()
+        font.setPointSize(13)
+        name.setFont(font)
+        return name
+
+    def _request_exit(self) -> None:
+        print("Exit requested, shutting down SDR")
+        Qt.QApplication.quit()
 
     def update_status(self, text: str) -> None:
         self.label.setText(text)
@@ -70,6 +111,6 @@ class SdrStatusWindow(Qt.QWidget):
             self.value_labels[key].setText(text)
 
     def closeEvent(self, event) -> None:
-        print("Status window closed, shutting down SDR")
-        Qt.QApplication.quit()
-        event.accept()
+        event.ignore()
+        self.hide()
+        print("Status window hidden (SDR keeps running, 退出 button / Ctrl+C to stop)")

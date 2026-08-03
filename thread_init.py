@@ -44,7 +44,8 @@ def _parse_args() -> str:
 def _run_status_window(controller: GnuradioController) -> None:
     """Show the SDR status window on the main thread and run the Qt loop.
 
-    Closing the window (or Ctrl+C / SIGTERM) stops the receiver and exits.
+    Closing the window only hides it; the receiver keeps running. Exit
+    via the 退出 button, Ctrl+C or SIGTERM.
     """
     from PyQt5 import Qt
 
