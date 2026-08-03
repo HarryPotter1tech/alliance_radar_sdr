@@ -130,8 +130,12 @@ python "gnu radio /GFSK_Transmmit_signal.py"
 ### 3) 启动联调
 
 ```bash
-python thread_init.py --enemySide red
+python thread_init.py --side red
 ```
+
+> `--side` 为**我方阵营**（red / blue）。SDR 接收己方雷达基座放置的波源
+> （信息波 433.2/433.92 MHz、干扰波对应频段），波内携带对方数据（规则手册 5.6）。
+> 旧参数 `--enemySide` 已废弃（仍兼容，勿再使用）。
 
 ## 使用系统 GNU Radio（虚拟环境兼容）
 

@@ -12,11 +12,11 @@ def rank_to_noise_grade(rank: int) -> str:
     return "noise_3"
 
 
-def init_shared_state(enemy_side: str, signal_frequency: int) -> dict:
+def init_shared_state(side: str, signal_frequency: int) -> dict:
     return {
         "noise_grade": "noise_1",
         "signal_frequency": signal_frequency,
-        "enemy_side": enemy_side,
+        "side": side,
         "rank": 1,
         "game_type": 0,
         "game_progress": 0,

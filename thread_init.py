@@ -5,14 +5,13 @@ import threading
 import time
 from control.gnuradio_control import GnuradioController
 from parser.gnuradio_frame_parser import RoboMaster_Noise_Key, RoboMaster_Signal_Info
-from comm.tcp.tcp_comm import tcp_gnuradio_noise_key_receiver
+from comm.tcp.tcp_comm import tcp_gnuradio_frame_receiver
 from comm.zmq.zmq_pub import zmq_start_pub
 from comm.zmq.zmq_sub import zmq_start_sub
 from shared_state import init_shared_state
 
 
-GFSK_SIGNAL_FREQUENCY = 433200000
-ENEMY_SIDE_SIGNAL_FREQUENCY = {
+SIDE_SIGNAL_FREQUENCY = {
     "red": 433200000,
     "blue": 433920000,
 }
@@ -32,13 +31,22 @@ def _wait_for_port(host: str, port: int, timeout_sec: float) -> None:
 
 
 def _parse_args() -> str:
+    """Parse our side (red/blue). The SDR receives the wave source placed
+    at our own radar base, which carries the opponent's data (rulebook 5.6).
+    """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--enemySide", default="red")
+    parser.add_argument("--side", default="red", help="我方阵营: red / blue")
+    parser.add_argument(
+        "--enemySide",
+        dest="side",
+        help=argparse.SUPPRESS,
+    )
     args = parser.parse_args()
-    enemy_side = str(args.enemySide).strip().lower()
-    if enemy_side not in ENEMY_SIDE_SIGNAL_FREQUENCY:
-        enemy_side = "red"
-    return enemy_side
+    side = str(args.side).strip().lower()
+    if side not in SIDE_SIGNAL_FREQUENCY:
+        print(f"Invalid --side {side!r}, fallback to red")
+        side = "red"
+    return side
 
 
 def _run_status_window(controller: GnuradioController) -> None:
@@ -86,14 +94,13 @@ def _run_status_window(controller: GnuradioController) -> None:
 
 
 def main() -> None:
-    enemy_side = _parse_args()
+    side = _parse_args()
+    signal_frequency = SIDE_SIGNAL_FREQUENCY[side]
+    print(f"SDR side={side}, 接收 {side} 方基座波源 {signal_frequency / 1e6:.3f} MHz")
     signal_info: RoboMaster_Signal_Info = RoboMaster_Signal_Info()
     noise_key: RoboMaster_Noise_Key = RoboMaster_Noise_Key()
 
-    shared_state = init_shared_state(
-        enemy_side,
-        ENEMY_SIDE_SIGNAL_FREQUENCY[enemy_side],
-    )
+    shared_state = init_shared_state(side, signal_frequency)
     lock = threading.Lock()
     signal_stop = threading.Event()
     noise_stop = threading.Event()
@@ -103,12 +110,12 @@ def main() -> None:
 
     _wait_for_port("127.0.0.1", 2500, 1.0)
 
-    noise_key_thread = threading.Thread(
-        target=tcp_gnuradio_noise_key_receiver,
-        args=(noise_key, lock, noise_stop),
+    frame_receiver_thread = threading.Thread(
+        target=tcp_gnuradio_frame_receiver,
+        args=(signal_info, noise_key, lock, shared_state, noise_stop),
         daemon=True,
     )
-    noise_key_thread.start()
+    frame_receiver_thread.start()
 
     zmq_pub_thread = threading.Thread(
         target=zmq_start_pub,

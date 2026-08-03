@@ -50,8 +50,8 @@ class GnuradioController:
     def _read_state(self) -> tuple[str, str]:
         with self.lock:
             noise_grade = self.shared_state.get("noise_grade", "noise_1")
-            enemy_side = self.shared_state.get("enemy_side", "red")
-        return noise_grade, enemy_side
+            side = self.shared_state.get("side", "red")
+        return noise_grade, side
 
     def _load_module(self):
         spec = importlib.util.spec_from_file_location("GFSK_RX", GFSK_RX_PATH)
@@ -62,9 +62,9 @@ class GnuradioController:
         return module
 
     def _expected_config(self) -> dict:
-        noise_grade, enemy_side = self._read_state()
+        noise_grade, side = self._read_state()
         mode = "signal" if noise_grade == "noise_3" else "noise"
-        return build_config(mode, enemy_side, noise_grade)
+        return build_config(mode, side, noise_grade)
 
     def _retry_delay(self) -> float:
         self._retry_attempt += 1
@@ -101,6 +101,14 @@ class GnuradioController:
             f"| 频率: {freq_mhz:.3f} MHz"
         )
 
+    def _set_mode(self, config: dict) -> None:
+        """Publish the active receiver mode (noise/signal) to shared state.
+
+        The TCP frame receiver switches its parser based on this value.
+        """
+        with self.lock:
+            self.shared_state["mode"] = config["mode"]
+
     def _attempt_start(self, module, config: dict, label: str):
         """Build+start the flowgraph; on failure log and back off."""
         try:
@@ -110,6 +118,7 @@ class GnuradioController:
             self._retry_attempt = 0
             self._retry_after = 0.0
             self._current_config = config
+            self._set_mode(config)
             log_data("gnuradiocontrol", label, config)
             self._report_status(self._format_running_status(config))
             return tb
@@ -137,6 +146,7 @@ class GnuradioController:
                     {"from": current_config, "to": expected},
                 )
                 self._current_config = expected
+                self._set_mode(expected)
                 try:
                     self._close_flowgraph(tb)
                 except Exception as exc:
@@ -166,6 +176,7 @@ class GnuradioController:
             # Initial start with retry until success or stop requested.
             config = self._expected_config()
             self._current_config = config
+            self._set_mode(config)
             tb = None
             while tb is None and not self._stopping.is_set():
                 tb = self._attempt_start(module, config, "flowgraph_started")

@@ -118,11 +118,17 @@ def main() -> int:
 
     # 1. initial noise_1
     check("noise_1 (rank=1)", 432200000, timeout=8.0)
+    mode_ok = shared_state.get("mode") == "noise"
+    print(f"{'PASS' if mode_ok else 'FAIL'} | shared_state mode published as noise "
+          f"(got={shared_state.get('mode')})")
+    ok = ok and mode_ok
     cfg = controller.current_config()
     cfg_ok = cfg is not None and cfg["mode"] == "noise" and cfg["frequency"] == 432200000
+    bw_ok = cfg is not None and cfg["bandwidth"] == 480000
     print(f"{'PASS' if cfg_ok else 'FAIL'} | current_config exposes noise_1 params "
           f"(mode={cfg and cfg.get('mode')}, freq={cfg and cfg.get('frequency')})")
-    ok = ok and cfg_ok
+    print(f"{'PASS' if bw_ok else 'FAIL'} | noise_1 lpf bandwidth = {cfg and cfg.get('bandwidth')} (expect 480000)")
+    ok = ok and cfg_ok and bw_ok
 
     # 2. retry scenario: fail the next device open, then rank=2 must succeed after backoff
     FakePluto.fail_next = True
@@ -133,17 +139,27 @@ def main() -> int:
     retried = log_contains("flowgraph_rebuilt failed (attempt 1")
     print(f"{'PASS' if retried else 'FAIL'} | retry logged (backoff on failure)")
     ok = ok and retried
+    cfg = controller.current_config()
+    bw_ok = cfg is not None and cfg["bandwidth"] == 440000
+    print(f"{'PASS' if bw_ok else 'FAIL'} | noise_2 lpf bandwidth = {cfg and cfg.get('bandwidth')} (expect 440000)")
+    ok = ok and bw_ok
 
     # 3. rank=3 -> signal
     with lock:
         shared_state["rank"] = 3
         shared_state["noise_grade"] = rank_to_noise_grade(3)
     check("signal (rank=3)", 433200000, timeout=8.0)
+    mode_ok = shared_state.get("mode") == "signal"
+    print(f"{'PASS' if mode_ok else 'FAIL'} | shared_state mode published as signal "
+          f"(got={shared_state.get('mode')})")
+    ok = ok and mode_ok
     cfg = controller.current_config()
     cfg_ok = cfg is not None and cfg["mode"] == "signal" and cfg["frequency"] == 433200000
+    bw_ok = cfg is not None and cfg["bandwidth"] == 280000
     print(f"{'PASS' if cfg_ok else 'FAIL'} | current_config follows signal conversion "
           f"(mode={cfg and cfg.get('mode')}, freq={cfg and cfg.get('frequency')})")
-    ok = ok and cfg_ok
+    print(f"{'PASS' if bw_ok else 'FAIL'} | signal lpf bandwidth = {cfg and cfg.get('bandwidth')} (expect 280000)")
+    ok = ok and cfg_ok and bw_ok
 
     # 4. graceful shutdown
     controller.stop()

@@ -39,7 +39,7 @@ class GFSK_RX(gr.top_block):
         self.sample_rate = sample_rate = 1000000
         self.rx_frequency = rx_frequency = globals().get('CONFIG', {}).get('frequency', 432200000)
         self.pi = pi = 3.141592653589793
-        self.lpf_cutoff = lpf_cutoff = globals().get('CONFIG', {}).get('bandwidth', 500000)
+        self.lpf_cutoff = lpf_cutoff = globals().get('CONFIG', {}).get('bandwidth', 480000)
         self.demod_sensitivity = demod_sensitivity = globals().get('CONFIG', {}).get('sensitivity', 2.8194)
         self.access_code = access_code = globals().get('CONFIG', {}).get('access_code', '0001011011101000110100110111011100010101000111000111000100101101')
         self.SPS = SPS = 47
