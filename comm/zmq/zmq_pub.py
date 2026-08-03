@@ -12,6 +12,13 @@ ZMQ_PUB_ADDR = "tcp://*:5555"
 PUB_INTERVAL = 0.1
 
 
+def is_valid_ascii_alnum_key(key: list[int]) -> bool:
+    """True if all 6 key bytes are ASCII letters or digits (rulebook: 数字字母组合)."""
+    return all(
+        48 <= byte <= 57 or 65 <= byte <= 90 or 97 <= byte <= 122 for byte in key
+    )
+
+
 def _build_position(info: RoboMaster_Signal_Info) -> dict:
     return {
         "hero_x": info.hero_position[0],
@@ -125,14 +132,15 @@ def zmq_start_pub(
     lock: threading.Lock,
     shared_state: dict,
     stop_event: threading.Event | None = None,
+    pub_addr: str = ZMQ_PUB_ADDR,
 ) -> None:
     thread_name = threading.current_thread().name
     log_thread_start("event", thread_name)
 
     ctx = zmq.Context()
     pub_socket = ctx.socket(zmq.PUB)
-    pub_socket.bind(ZMQ_PUB_ADDR)
-    log("event", f"ZMQ PUB bound to {ZMQ_PUB_ADDR}")
+    pub_socket.bind(pub_addr)
+    log("event", f"ZMQ PUB bound to {pub_addr}")
 
     try:
         while True:
@@ -147,6 +155,15 @@ def zmq_start_pub(
                     )
                     time.sleep(PUB_INTERVAL)
                     continue
+                if shared_state.get("mode", "noise") == "noise":
+                    key = _build_key(noise_key)["key"]
+                    if not is_valid_ascii_alnum_key(key):
+                        log(
+                            "zmq_pub",
+                            f"skip publish: noise key filtered (non-ASCII): {key}",
+                        )
+                        time.sleep(PUB_INTERVAL)
+                        continue
                 msg = {
                     "cmd_id": ZMQ_SUB_SDR,
                     "position": _build_position(signal_info),
