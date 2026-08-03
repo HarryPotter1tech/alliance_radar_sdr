@@ -9,6 +9,7 @@ from comm.tcp.tcp_comm import tcp_gnuradio_frame_receiver
 from comm.zmq.zmq_pub import zmq_start_pub
 from comm.zmq.zmq_sub import zmq_start_sub
 from shared_state import init_shared_state
+from logs.event_logger import log
 
 
 SIDE_SIGNAL_FREQUENCY = {
@@ -24,10 +25,11 @@ def _wait_for_port(host: str, port: int, timeout_sec: float) -> None:
             sock.settimeout(0.5)
             try:
                 sock.connect((host, port))
+                log("event", f"Port ready: {host}:{port}")
                 return
             except OSError:
                 time.sleep(0.2)
-    print(f"Port not ready: {host}:{port}")
+    log("event", f"Port not ready: {host}:{port}")
 
 
 def _parse_args() -> str:
@@ -44,8 +46,9 @@ def _parse_args() -> str:
     args = parser.parse_args()
     side = str(args.side).strip().lower()
     if side not in SIDE_SIGNAL_FREQUENCY:
-        print(f"Invalid --side {side!r}, fallback to red")
+        log("event", f"Invalid --side {side!r}, fallback to red")
         side = "red"
+    log("event", f"Parsed --side {side}")
     return side
 
 
@@ -62,7 +65,7 @@ def _run_status_window(controller: GnuradioController) -> None:
     qapp = Qt.QApplication([])
     window = SdrStatusWindow()
     window.show()
-    print("Status window shown")
+    log("event", "Status window shown")
 
     interrupted = False
 
@@ -90,13 +93,16 @@ def _run_status_window(controller: GnuradioController) -> None:
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     signal.signal(signal.SIGTERM, signal.SIG_DFL)
     controller.stop()
-    print("Shutdown complete")
+    log("event", "Shutdown complete")
 
 
 def main() -> None:
     side = _parse_args()
     signal_frequency = SIDE_SIGNAL_FREQUENCY[side]
-    print(f"SDR side={side}, 接收 {side} 方基座波源 {signal_frequency / 1e6:.3f} MHz")
+    log(
+        "event",
+        f"SDR startup: side={side}, 接收 {side} 方基座波源 {signal_frequency / 1e6:.3f} MHz",
+    )
     signal_info: RoboMaster_Signal_Info = RoboMaster_Signal_Info()
     noise_key: RoboMaster_Noise_Key = RoboMaster_Noise_Key()
 
@@ -116,6 +122,7 @@ def main() -> None:
         daemon=True,
     )
     frame_receiver_thread.start()
+    log("event", f"Thread started: {frame_receiver_thread.name}")
 
     zmq_pub_thread = threading.Thread(
         target=zmq_start_pub,
@@ -123,6 +130,7 @@ def main() -> None:
         daemon=True,
     )
     zmq_pub_thread.start()
+    log("event", f"Thread started: {zmq_pub_thread.name}")
 
     zmq_sub_thread = threading.Thread(
         target=zmq_start_sub,
@@ -130,21 +138,22 @@ def main() -> None:
         daemon=True,
     )
     zmq_sub_thread.start()
+    log("event", f"Thread started: {zmq_sub_thread.name}")
 
     # All worker threads started; only now bring up the status window.
-    print("All threads started")
+    log("event", "All threads started")
     try:
         _run_status_window(gnuradio_controller)
     except Exception as exc:
         # Headless fallback: no display available, wait for Ctrl+C.
-        print(f"Status window unavailable ({exc!r}), running headless")
+        log("event", f"Status window unavailable ({exc!r}), running headless")
         try:
             while True:
                 time.sleep(0.5)
         except KeyboardInterrupt:
             pass
         gnuradio_controller.stop()
-        print("Shutdown complete")
+        log("event", "Shutdown complete")
 
 
 if __name__ == "__main__":

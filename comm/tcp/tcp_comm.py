@@ -7,7 +7,13 @@ from parser.gnuradio_frame_parser import (
     RoboMaster_Signal_Info,
 )
 
-from logs.event_logger import log, log_data, log_thread_start, log_thread_stop
+from logs.event_logger import (
+    log,
+    log_data,
+    log_rate_limited,
+    log_thread_start,
+    log_thread_stop,
+)
 
 
 def _update_dataclass_inplace(target, source) -> bool:
@@ -35,15 +41,26 @@ def tcp_gnuradio_frame_receiver(
     frameparser = GnuRadioFrameParser("noise")
     thread_name = threading.current_thread().name
     log_thread_start("event", thread_name)
+    connect_attempt = 0
     try:
         while True:
             if stop_event and stop_event.is_set():
                 break
-            log("event", f"Connecting to gnu radio frame server {server_address[0]}:{server_address[1]}")
+            connect_attempt += 1
+            log_rate_limited(
+                "event",
+                f"connect attempt #{connect_attempt} to {server_address[0]}:{server_address[1]}",
+                interval_sec=5.0,
+                key="connect_attempt",
+            )
             tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 tcp_socket.connect(server_address)
-                log("event", "Connected to gnu radio frame server")
+                log(
+                    "event",
+                    f"Connected to gnu radio frame server after {connect_attempt} attempts",
+                )
+                connect_attempt = 0
                 buffer: bytes = b""
                 while True:
                     if stop_event and stop_event.is_set():
@@ -51,9 +68,10 @@ def tcp_gnuradio_frame_receiver(
                     try:
                         chunk = tcp_socket.recv(1024)
                     except socket.error as e:
-                        log(
+                        log_rate_limited(
                             "event",
                             f"Error connecting to gnu radio frame server: {e}",
+                            interval_sec=5.0,
                         )
                         break
                     if not chunk:
@@ -68,18 +86,30 @@ def tcp_gnuradio_frame_receiver(
                                 log("event", f"Frame parser switched to {mode} mode")
                             parsed = frameparser.payload_parse(buffer)
                             if isinstance(parsed, RoboMaster_Signal_Info):
-                                if signal_info == parsed:
-                                    log("event", "Parsed signal data unchanged")
+                                changed = not (signal_info == parsed)
                                 _update_dataclass_inplace(signal_info, parsed)
-                                log_data("parsed", "signal_info", parsed)
+                                if changed:
+                                    log_data(
+                                        "parsed",
+                                        f"signal_info (mode={mode})",
+                                        parsed,
+                                    )
                             elif isinstance(parsed, RoboMaster_Noise_Key):
-                                if noise_key == parsed:
-                                    log("event", "Parsed noise key data unchanged")
+                                changed = not (noise_key == parsed)
                                 _update_dataclass_inplace(noise_key, parsed)
-                                log_data("parsed", "noise_key", parsed)
+                                if changed:
+                                    log_data(
+                                        "parsed",
+                                        f"noise_key (mode={mode})",
+                                        parsed,
+                                    )
                         buffer = b""
             except socket.error as e:
-                log("event", f"Error connecting to gnu radio frame server: {e}")
+                log_rate_limited(
+                    "event",
+                    f"Error connecting to gnu radio frame server: {e}",
+                    interval_sec=5.0,
+                )
             finally:
                 tcp_socket.close()
             if stop_event and stop_event.is_set():

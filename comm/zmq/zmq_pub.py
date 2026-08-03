@@ -4,7 +4,7 @@ import time
 
 import zmq
 
-from logs.event_logger import log, log_data, log_thread_start, log_thread_stop
+from logs.event_logger import log, log_thread_start, log_thread_stop
 from parser.gnuradio_frame_parser import RoboMaster_Signal_Info, RoboMaster_Noise_Key
 from shared_state import ZMQ_SUB_SDR
 
@@ -143,25 +143,37 @@ def zmq_start_pub(
     log("event", f"ZMQ PUB bound to {pub_addr}")
 
     try:
+        last_logged_payload: str | None = None
+        last_skipped_progress: int | None = None
+        last_skipped_key: list[int] | None = None
         while True:
             if stop_event and stop_event.is_set():
                 break
             with lock:
                 game_progress = shared_state.get("game_progress", 0)
                 if game_progress != 4:
-                    log(
-                        "zmq_pub",
-                        f"skip publish: game_progress={game_progress}",
-                    )
+                    if game_progress != last_skipped_progress:
+                        log(
+                            "zmq_pub",
+                            f"skip publish: game_progress={game_progress} "
+                            f"(mode={shared_state.get('mode', 'noise')}, "
+                            f"rank={shared_state.get('rank', 1)}, "
+                            f"noise_grade={shared_state.get('noise_grade', 'noise_1')})",
+                        )
+                        last_skipped_progress = game_progress
                     time.sleep(PUB_INTERVAL)
                     continue
                 if shared_state.get("mode", "noise") == "noise":
                     key = _build_key(noise_key)["key"]
                     if not is_valid_ascii_alnum_key(key):
-                        log(
-                            "zmq_pub",
-                            f"skip publish: noise key filtered (non-ASCII): {key}",
-                        )
+                        if key != last_skipped_key:
+                            log(
+                                "zmq_pub",
+                                f"skip publish: noise key filtered (non-ASCII): "
+                                f"{key} hex={bytes(key).hex(' ')} "
+                                f"(game_progress={game_progress})",
+                            )
+                            last_skipped_key = key
                         time.sleep(PUB_INTERVAL)
                         continue
                 msg = {
@@ -173,8 +185,15 @@ def zmq_start_pub(
                     "gain": _build_gain(signal_info),
                     "key": _build_key(noise_key),
                 }
-            pub_socket.send_string(json.dumps(msg))
-            log_data("zmq_pub", "publish", msg)
+                mode = shared_state.get("mode", "noise")
+            json_payload = json.dumps(msg)
+            pub_socket.send_string(json_payload)
+            if json_payload != last_logged_payload:
+                log(
+                    "zmq_pub",
+                    f"send (mode={mode}, game_progress={game_progress}): {json_payload}",
+                )
+                last_logged_payload = json_payload
             time.sleep(PUB_INTERVAL)
     finally:
         log_thread_stop("event", thread_name)

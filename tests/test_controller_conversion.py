@@ -91,7 +91,14 @@ def wait_for_frequency(expected_freq, timeout_sec=15.0):
 
 
 def log_contains(label, since_instances=0):
-    log_path = Path(__file__).resolve().parent.parent / "logs" / "gnuradiocontrol.log"
+    logs_dir = Path(__file__).resolve().parent.parent / "logs"
+    session_dirs = sorted(
+        (p for p in logs_dir.iterdir() if p.is_dir() and p.name[:8].isdigit()),
+        key=lambda p: p.name,
+    )
+    if not session_dirs:
+        return False
+    log_path = session_dirs[-1] / "gnuradiocontrol.log"
     if not log_path.exists():
         return False
     text = log_path.read_text(encoding="utf-8", errors="replace")

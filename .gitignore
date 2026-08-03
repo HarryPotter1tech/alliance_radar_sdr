@@ -6,3 +6,4 @@ radar-sdr/*
 .vscode/
 *.pdf
 logs/*.log
+logs/*/

@@ -1,5 +1,7 @@
 from PyQt5 import Qt
 
+from logs.event_logger import log
+
 
 class SdrStatusWindow(Qt.QWidget):
     """Status window for the SDR receiver: shows current parameter config.
@@ -136,7 +138,7 @@ class SdrStatusWindow(Qt.QWidget):
             swatch.setStyleSheet("background-color: transparent;")
 
     def _request_exit(self) -> None:
-        print("Exit requested, shutting down SDR")
+        log("event", "Exit requested, shutting down SDR")
         Qt.QApplication.quit()
 
     def update_status(self, text: str) -> None:
@@ -174,4 +176,4 @@ class SdrStatusWindow(Qt.QWidget):
     def closeEvent(self, event) -> None:
         event.ignore()
         self.hide()
-        print("Status window hidden (SDR keeps running, 退出 button / Ctrl+C to stop)")
+        log("event", "Status window hidden (SDR keeps running, 退出 button / Ctrl+C to stop)")
