@@ -1,4 +1,5 @@
 from typing import Union
+import time
 from dataclasses import dataclass, field
 
 
@@ -11,6 +12,9 @@ class RoboMaster_Signal_Info:
     infantry_4_position: list[int] = field(default_factory=lambda: [0, 0])
     aerial_position: list[int] = field(default_factory=lambda: [0, 0])
     sentry_position: list[int] = field(default_factory=lambda: [0, 0])
+    # 最近一次解析到有效信号帧的时间（epoch 秒），0 = 从未收到。
+    # gap 期间持久对象保留旧值，消费方（radar-egui）凭此判断数据新鲜度。
+    updated_at: float = 0.0
 
     cmd_id_2: int = 0x0A02
     hero_blood: int = 0
@@ -309,6 +313,8 @@ class GnuRadioFrameParser:
                 info.sentry_gain_state = int.from_bytes(
                     self.message_package[i + 42 : i + 43], byteorder="little"
                 )
+        if parsed_any:
+            info.updated_at = time.time()
         return info if parsed_any else None
 
     def _parse_noise(self, input_data: bytes) -> RoboMaster_Noise_Key | None:

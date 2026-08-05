@@ -178,6 +178,9 @@ def zmq_start_pub(
                         continue
                 msg = {
                     "cmd_id": ZMQ_SUB_SDR,
+                    # 数据新鲜度：最近一次有效信号帧解析时间（epoch 秒）。
+                    # gap 期间持久对象保留旧值，消费方凭此判断是否过期。
+                    "timestamp": getattr(signal_info, "updated_at", 0.0),
                     "position": _build_position(signal_info),
                     "blood": _build_blood(signal_info),
                     "ammo": _build_ammo(signal_info),
