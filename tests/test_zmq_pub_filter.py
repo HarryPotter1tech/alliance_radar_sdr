@@ -134,14 +134,14 @@ def main() -> int:
     ok = ok and signal_no_filter
     print(f"{'PASS' if signal_no_filter else 'FAIL'} | signal mode publishes regardless of key ({len(msgs)} msgs)")
 
-    # --- 6. game_progress gate still holds ---
+    # --- 6. game_progress gate still holds (publish only when >= 3) ---
     drain(0.2)
     with lock:
         shared_state["game_progress"] = 0
     msgs = recv_window(0.8)
     gate_ok = len(msgs) == 0
     ok = ok and gate_ok
-    print(f"{'PASS' if gate_ok else 'FAIL'} | game_progress!=4 gate holds ({len(msgs)} msgs)")
+    print(f"{'PASS' if gate_ok else 'FAIL'} | game_progress<3 gate holds ({len(msgs)} msgs)")
 
     stop.set()
     pub_thread.join(timeout=2)

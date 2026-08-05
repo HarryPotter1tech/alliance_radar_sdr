@@ -78,7 +78,7 @@ def tcp_gnuradio_frame_receiver(
                         log("event", "Connection closed, reconnecting...")
                         break
                     buffer += chunk
-                    if len(buffer) >= 200:
+                    if len(buffer) >= 400:
                         with lock:
                             mode = shared_state.get("mode", "noise")
                             if frameparser.receive_mode != mode:

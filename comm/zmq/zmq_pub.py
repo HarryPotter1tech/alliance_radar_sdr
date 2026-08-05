@@ -151,7 +151,7 @@ def zmq_start_pub(
                 break
             with lock:
                 game_progress = shared_state.get("game_progress", 0)
-                if game_progress != 4:
+                if game_progress < 3:
                     if game_progress != last_skipped_progress:
                         log(
                             "zmq_pub",
