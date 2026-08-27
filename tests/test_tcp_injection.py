@@ -27,7 +27,7 @@ from parser.gnuradio_frame_parser import (  # noqa: E402
 def make_pos_frame():
     values = [10, -20, 30, -40, 50, -60, 70, -80, 90, -100, 110, -120]
     return (0x0A01).to_bytes(2, "little") + b"".join(
-        v.to_bytes(2, "big", signed=True) for v in values
+        v.to_bytes(2, "little", signed=True) for v in values
     )
 
 
